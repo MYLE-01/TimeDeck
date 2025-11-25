@@ -30,7 +30,7 @@ from utils.io import load_shifts , load_json, save_roster, save_json, load_roste
 from utils.math import min_to_hrs, convert_this_to_mins, flip_date, convert_expression_to_mins, is_it_pay_day ,get_shift_summary_for_date
 from utils.auth import get_windows_login, who_is_login, can_user_add_employee,find_employee_by_login,load_reporting_managers
 from utils.backup import backup_all_json
-from utils.timeline import Timeline,QR_code_alarm
+from utils.timeline import Timeline,QR_code_alarm,trace_surplus_window
 from utils.paths import BASE_DIR,CONFIG_DIRS , CONFIGS_DIR, CONFIG_DIR, JOB_TITLES_FILE, QR_DIR, TEMPLATES_DIR, STATIC_DIR, IMAGES_DIR
 import shutil
 
