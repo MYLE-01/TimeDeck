@@ -3,7 +3,7 @@
   "emp_name": "StePhan McKillen",
   "report_to": "654322",
   "contact_number": "0220233194",
-  "job_title": "L8",
+  "job_title": "5B",
   "_notes": "Base config for each EMP. Updated annually with rollover leave.",
   "default_entitlement_mins": 139500,
   "public_holidays": "Taranaki",
@@ -119,7 +119,7 @@
   "min_blind_codes": [
     "TRE"
   ],
-  "last_updated": "2025-11-25 16:18",
+  "last_updated": "2025-11-25 18:46",
   "draw_down_codes": [
     "ADT",
     "LSL",

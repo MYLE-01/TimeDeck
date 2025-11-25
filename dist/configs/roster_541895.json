@@ -902,8 +902,8 @@
     "date": "2025-11-19",
     "shift": "A Shift",
     "shift_type": "Day",
-    "type_shift": "SHIFT",
-    "mins": 1098,
+    "type_shift": "CASH",
+    "mins": 0,
     "callback_eligible": false,
     "cover_allowed": false,
     "on_shift": true,
@@ -1020,6 +1020,18 @@
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
+  },
+  {
+    "ID": "284f9dec-ae0d-4fce-8937-bcbf5b1ed982",
+    "date": "2025-12-06",
+    "shift": "A Shift",
+    "shift_type": "Day",
+    "type_shift": "SHIFT",
+    "mins": 738,
+    "callback_eligible": false,
+    "cover_allowed": false,
+    "on_shift": true,
+    "notes": "Cover for A Shift"
   },
   {
     "ID": "682e1a9e-2f93-4400-8253-1e8a5e8e8e7b",

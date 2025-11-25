@@ -115,8 +115,10 @@ def build_tree_recursive(data, emp_ids, titles_order, visited=None):
         shift = emp_obj.get("shift", "N/A")
         has_reports = emp_id in data
         ok, me = who_is_login()
-
+        #print(f"OK: {ok}, Me: {me}, Emp ID: {emp_id}, Reporting Managers: {reporting_managers}")
         # Build name HTML: link only when job_title is in reporting_managers
+          
+        
         if ok[0]:
             name_html = (
                 f'<a href="/config_person/{emp_obj["id"]}" '
@@ -298,6 +300,11 @@ def build_html_tree(data, departments, titles_order, me, no_manager=None):
         for emp in sorted(no_manager, key=lambda e: e['name']):
 
             # Build name HTML: link only when job_title is in reporting_managers
+            #print(f"OK {ok}")
+            #print(f"me {me}")
+            #print(f"report_map = {report_map}")
+            #my_emp = report_map[me["id"]]
+            #print(f"my_emp = {my_emp}")
             if ok[0] :
                 name_html = (
                     f'<a href="/config_person/{emp["id"]}" class="font-semibold text-gray-800 hover:underline">{emp["name"]}</a>'

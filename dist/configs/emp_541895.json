@@ -3,7 +3,7 @@
   "emp_name": "StePhan McKillen",
   "report_to": "0",
   "contact_number": "0220233194",
-  "job_title": "L8",
+  "job_title": "5B",
   "_notes": "Base config for each EMP. Updated annually with rollover leave.",
   "default_entitlement_mins": 139500,
   "public_holidays": "Taranaki",
@@ -29,6 +29,7 @@
     "winter_ends": "09-07-2026"
   },
   "annual_entitlements_carryover": {
+    "_notes": "This is our start point rem in MINS but input could be in mins",
     "SHIFT": 0,
     "CB": 7200,
     "PNW": 0,
@@ -42,10 +43,10 @@
     "BVT": 0,
     "PPL": 0,
     "TRE": 480,
-    "CASH": 0,
-    "_notes": "This is our start point rem in MINS but input could be in mins"
+    "CASH": 0
   },
   "annual_entitlements_used": {
+    "_notes": "this is what been used this season",
     "SHIFT": 0,
     "CB": 0,
     "PNW": 0,
@@ -59,8 +60,7 @@
     "BVT": 0,
     "PPL": 0,
     "TRE": 0,
-    "CASH": 0,
-    "_notes": "this is what been used this season"
+    "CASH": 0
   },
   "misc_adjustments": {
     "_notes": "Mite a need some brain here make relay smart",
@@ -119,19 +119,24 @@
   "min_blind_codes": [
     "TRE"
   ],
-  "last_updated": "2025-11-24T23:57:15.414553",
+  "last_updated": "2025-11-26 06:46",
   "draw_down_codes": [
     "ADT",
     "LSL",
     "PAL"
   ],
+  "Maths": {
+    "PSL": "PSL=480 PNW=240",
+    "BVT": "BVT=480 PNW=240",
+    "PPL": "PPL=480 PNW=240"
+  },
   "your_windows_login": "user",
   "departments": "DPP2",
   "working_dept": [],
-  "force_season_roll": false,
-  "updated_by": "User",
   "schedule": {
     "Day": "05:00",
     "Night": "17:00"
-  }
+  },
+  "force_season_roll": false,
+  "updated_by": "User"
 }
