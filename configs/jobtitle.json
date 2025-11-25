@@ -1,0 +1,17 @@
+{
+  "reporting_managers": "Manager, L8, L7",
+  "titles": {
+    "Manager": "Manager",
+    "L8": "Level 8",
+    "L7": "Level 7",
+    "2IC": "Second in Charge",
+    "L6": "Level 6",
+    "5A": "Level 5A",
+    "5B": "Level 5B",
+    "L4": "Level 4"
+  },
+  "departments": {
+    "Powders": "Powders",
+    "Dpp2": "Dpp2"
+  }
+}

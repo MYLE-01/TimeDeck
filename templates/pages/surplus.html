@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs, format_phone_number, back_button %}
+{% block content %}
+
+<h2>Surplus Drawdown</h2>
+<p>{{ emp_id }} is {{ min_to_hrs(surplus_hours * 60) }} ahead as of {{ last_day }}.</p>
+<p>Surplus window starts on: <strong>{{ start_date }}</strong></p>
+
+<canvas id="drawdownChart" width="800" height="400"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Convert minutes to hh:mm format
+  function minsToHrs(mins) {
+    const hrs = Math.floor(mins / 60);
+    const remainder = mins % 60;
+    return `${hrs}:${remainder.toString().padStart(2, '0')}`;
+  }
+
+  const ctx = document.getElementById('drawdownChart').getContext('2d');
+
+  // Reverse the drawdown so it descends toward zero
+  const rawData = {{ drawdown_data | tojson }};
+  const reversed = [...rawData].reverse();
+  const labels = reversed.map(e => e.date);
+  const cumulative = [];
+  let total = reversed.reduce((sum, e) => sum + e.mins, 0);
+  reversed.forEach(e => {
+    cumulative.push(total);
+    total -= e.mins;
+  });
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Surplus Remaining',
+        data: cumulative,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.3,
+        pointRadius: 2
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          title: {
+            display: true,
+            text: 'Surplus (hh:mm)'
+          },
+          ticks: {
+            callback: function(value) {
+              return minsToHrs(value);
+            }
+          },
+          beginAtZero: true
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Date'
+          },
+          ticks: {
+            maxTicksLimit: 10
+          }
+        }
+      },
+      plugins: {
+        title: {
+          display: true,
+          text: `Surplus Drawdown: {{ min_to_hrs(surplus_hours * 60) }} from {{ start_date }} to {{ last_day }}`
+        }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , format_phone_number, back_button %}
+{% block content %}
+<div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-4">Shifts</h1>
+    <div class="mb-4">
+        Manage the shifts used in the roster system. You can add, edit, and reorder shifts as needed.
+       <br>
+       Sequence and the First Date are important for the roster generation.
+       <br>First date = Day one of the shift pattern.
+       <br>Sequence how the shifts rotate.
+
+    </div>      
+    <a href="/shifts/new" class="bg-blue-500 text-white px-4 py-2 rounded">➕ Add New Shift</a>
+
+    <table class="table-auto w-full mt-4 border-collapse border border-gray-300">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="border p-2">Drag</th>
+                <th class="border p-2">Name</th>
+                <th class="border p-2">First Date</th>
+                <th class="border p-2">Pattern</th>
+                <th class="border p-2">Sequence</th>
+                <th class="border p-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for shift in shifts %}
+            <tr class="border-t hover:bg-blue-50 transition">
+                <td class="border p-2 cursor-move text-center">☰</td>
+                <td class="border p-2">{{ shift.name }} <span class="text-gray-400 text-[0.75em]">({{shift.count}})</span></td>
+                <td class="border p-2">
+                    <div>
+                        <div class="font-medium">{{ safe_display_date(shift.first) }}</div>
+                        <div class="text-gray-400 text-[0.75em]">
+                            {% if shift.name in shift_today %}
+                                Today {{ shift_today[shift.name]["cycle_text"] }}<br>
+                                {{ shift_today[shift.name]["label"] }}
+                            {% else %}
+                                No data
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td class="border p-2">{{ shift.roster_pattern }}</td>
+                <td class="border p-2">{{ shift.shift_sequence }}</td>
+                <td class="border p-1">
+                {% if me.job_title in ["Manager", "L8"] %}
+                    <a href="/shifts/edit/{{ shift.name | url_encode }}" class="text-blue-500">Edit</a>
+                    <!--| <a href="/shifts/delete/{{ loop.index0 }}" class="text-red-500"
+                       onclick="return confirm('Delete this shift?')">🗑 Delete</a>-->
+                {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="border p-2 text-center">No shifts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+<br>
+<div class="flex justify-center ">
+    <a href="/jobtitles" class="bg-blue-500 text-white px-4 py-2 rounded" >Job Titles / Departments</a>&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="/edit-entitlements" class="bg-blue-500 text-white px-4 py-2 rounded">Edit Entitlements</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+{% if me.job_title in ["Manager", "L8"] %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const tableBody = document.querySelector("tbody");
+
+    Sortable.create(tableBody, {
+        animation: 150,
+        handle: "td.cursor-move",  // only drag by the ☰ column
+        onEnd: function (evt) {
+            let newOrder = [];
+            tableBody.querySelectorAll("tr").forEach(row => {
+                const shiftName = row.querySelectorAll("td")[1].innerText.trim().split(" (")[0];
+                newOrder.push(shiftName);
+            });
+
+            fetch("/shifts/reorder", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newOrder)
+            })
+            .then(res => res.json())
+            .then(data => console.log("Saved:", data))
+            .catch(err => console.error("Error saving order:", err));
+        }
+    });
+});
+</script>
+{% endif %}
+
+{{ back_button() }}
+
+{% endblock %}

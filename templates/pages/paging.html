@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , format_phone_number, back_button%}
+{% block content %}
+<div style="font-family: sans-serif; margin: 20px;">
+  <h3 style="font-size: 1.2em; font-weight: bold; margin-bottom: 10px;">📈 Pacing Timeline</h3>
+  <div style="position: relative; padding: 20px 0; border-top: 2px solid #3b82f6; border-bottom: 2px solid #3b82f6;">
+
+    <!-- Timeline Labels -->
+    <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #333;">
+      <span>🟢 Season Start</span>
+      <span>📅 Today</span>
+      <span>🏁 Projected Finish</span>
+    </div>
+
+    <!-- Timeline Line -->
+    <div style="position: relative; height: 2px; background: #3b82f6; margin: 20px 0;"></div>
+
+    <!-- Markers -->
+    <div style="position: relative; display: flex; justify-content: space-between; margin-top: -20px;">
+      <div style="position: relative;">
+        <div style="position: absolute; top: -30px; left: 0; font-size: 0.8em;">▲<br>Surplus Block</div>
+      </div>
+      <div style="position: relative;">
+        <div style="position: absolute; top: -30px; left: -10px; font-size: 0.8em;">▲<br>Leave Request?</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+

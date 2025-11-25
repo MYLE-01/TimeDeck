@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import back_button %}
+
+{% block content %}
+
+<style>
+.cover-cell {
+  min-height: 5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+}
+.cover-missing { background-color: #fee2e2; }  /* red */
+.cover-extra   { background-color: #d1fae5; }  /* green */
+.cover-ok      { background-color: #e0f2fe; }  /* blue */
+
+@media print {
+  .print-block {
+    display: block;
+    page-break-before: always;
+    page-break-after: always;
+    break-inside: avoid;
+  }
+  .calendar-grid,
+  .header,
+  .filters,
+  .no-print {
+    display: none;
+  }
+}
+</style>
+<div class="p-2">
+  <!-- Filters row -->
+  <div class="flex gap-2 mb-4">
+    <select id="shiftSelect" class="border p-2 rounded" onchange="loadCoverCalendar()">
+      <option value="">All Shifts</option>
+      {% for s in shifts %}
+        <option value="{{ s.name }}">{{ s.name }}</option>
+      {% endfor %}
+    </select>
+
+    <select id="deptSelect" class="border p-2 rounded" onchange="loadCoverCalendar()">
+      <option value="">All Departments</option>
+      {% for dept in departments %}
+        <option value="{{ dept }}">{{ dept }}</option>
+      {% endfor %}
+    </select>
+
+    <div class="flex items-center gap-2">
+      <button onclick="changeMonth(-1)" class="px-2 py-1 bg-gray-200 rounded">&lt;</button>
+      <select id="monthSelect" class="border p-2 rounded" onchange="loadCoverCalendar()">
+        {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == now.month %}selected{% endif %}>
+            {{ datetime(2000, m, 1).strftime('%B') }}
+          </option>
+        {% endfor %}
+      </select>
+      <button onclick="changeMonth(1)" class="px-2 py-1 bg-gray-200 rounded">&gt;</button>
+    </div>
+
+    <select id="yearSelect" class="border p-2 rounded" onchange="loadCoverCalendar()">
+      {% for y in range(now.year-1, now.year+3) %}
+        <option value="{{ y }}" {% if y == now.year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Month header -->
+  <div class="text-center font-bold text-xl mb-3" id="calendarMonthYear">
+    {{ now.strftime('%B %Y') }}
+  </div>
+
+  <!-- Weekdays header -->
+  <div class="grid grid-cols-7 gap-2 font-semibold text-center text-gray-700 mb-2">
+    <div>Sun</div><div>Mon</div><div>Tue</div>
+    <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+  </div>
+
+  <!-- Calendar grid -->
+  <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
+
+  <!-- Heatmap legend -->
+  <div class="text-xs text-gray-600 mt-2">
+    <span class="bg-green-200 px-2 py-1 rounded">95%+ Coverage</span>
+    <span class="bg-yellow-200 px-2 py-1 rounded">75–94%</span>
+    <span class="bg-red-200 px-2 py-1 rounded">Below 75%</span>
+  </div>
+
+  <!-- Summary table -->
+  <div id="coverSummary" class="mt-6"></div>
+
+  <!-- Callback stats -->
+  <div id="callbackStats" class="mt-6"></div>
+</div>
+<div class="flex justify-center mt-4">
+  <button onclick="window.print()" class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow transition">🖨️ Print Coverage Report</button>
+</div>
+
+<script src="static/scripts/calendar_cover.js?v={{ now }}"></script>
+{{ back_button() }}
+{% endblock %}

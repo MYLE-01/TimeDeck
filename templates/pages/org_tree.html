@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , format_phone_number, back_button%}
+{% block content %}
+
+<style>
+
+
+  body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+  .department-employees.hidden {
+      display: none !important;
+  }
+
+@media print {
+  /* Hide collapsed sections */
+  .hidden {
+    display: none !important;
+  }
+  /* Hide toggle buttons */
+  button {
+    display: none !important;
+  }
+  /* Optional: make tables full width */
+  table {
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+  td, th {
+    word-wrap: break-word !important;
+  }
+  .printable {
+    position: absolute;
+    top: 140px;
+    left: 20px;
+    width: 100%;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: none  !important;
+  }
+}
+
+@media screen {
+  .print-only {
+    display: block !important; /* hidden on screen */
+  }
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important; /* Chrome/Safari */
+    print-color-adjust: exact ! important;         /* Firefox */
+    color-adjust: exact ! important;               /* Older syntax */
+  }
+
+  body {
+    background-color: white !important; /* Ensures page background */
+  }
+}
+
+</style>
+
+<h2 class="text-3xl font-bold text-gray-800 mb-6">📋 Team Structure</h2>
+<!-- Render the nested tree here -->
+<div class="flex justify-center">
+
+    <a href="/config_person" class=" {{ok[2]}} no-print flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition duration-200" >🙋 Add New shift person</a><br>
+</div>
+<br>
+<div class="org-chart ml-4">
+    {{ html_body | safe }}
+</div>
+
+<!-- Divider -->
+<hr class="my-8">
+
+<!-- Only show manager boxes if needed -->
+<div class="flex flex-wrap gap-10">
+<!-- Placeholder for manager info if needed in the future -->
+</div>
+
+<div class="flex justify-center">
+  <button 
+    onclick="window.print()" 
+    class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition duration-200" >
+    <span>🖨️ Print This</span>
+  </button>
+</div>
+
+<script>
+// Toggle direct reports of an employee (cards)
+document.querySelectorAll(".toggle-employee").forEach(btn => {
+  btn.addEventListener("click", () => {
+    // Find the parent card div
+    const parentCard = btn.closest('div'); 
+    // Look for the next sibling div (nested reports)
+    const nestedDiv = parentCard.nextElementSibling;
+    if (!nestedDiv) return;
+    nestedDiv.classList.toggle('hidden');
+
+    // Rotate the arrow
+    const svg = btn.querySelector('svg');
+    if (svg) svg.classList.toggle('rotate-90');
+  });
+});
+
+// Toggle all shifts within a department
+document.querySelectorAll(".toggle-shift-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const shiftDiv = btn.nextElementSibling; // .shift-employees div
+    if (shiftDiv) shiftDiv.classList.toggle("hidden");
+    const svg = btn.querySelector("svg");
+    if (svg) svg.classList.toggle("rotate-90");
+  });
+});
+
+// Toggle entire department
+document.querySelectorAll(".toggle-department-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const deptDiv = btn.nextElementSibling; // department-employees div
+    if (deptDiv) deptDiv.classList.toggle("hidden");
+    const svg = btn.querySelector("svg");
+    if (svg) svg.classList.toggle("rotate-90");
+  });
+});
+
+// Toggle Trainee block
+document.querySelectorAll(".toggle-trainee-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const traineeDiv = btn.nextElementSibling; // trainee-employees div
+    if (traineeDiv) traineeDiv.classList.toggle("hidden");
+    const svg = btn.querySelector("svg");
+    if (svg) svg.classList.toggle("rotate-90");
+  });
+});
+
+
+document.querySelectorAll(".toggle-no-manager").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const content = btn.nextElementSibling; // the hidden div
+        if (content) content.classList.toggle("hidden");
+
+        // Rotate the arrow
+        const svg = btn.querySelector("svg");
+        if (svg) svg.classList.toggle("rotate-90");
+    });
+});
+
+</script>
+{{ back_button() }}
+
+{% endblock %}

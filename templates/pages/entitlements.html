@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white p-6 rounded shadow mt-6">
+  <h2 class="text-lg font-bold mb-4">Employee Entitlements</h2>
+
+  <label for="datePicker" class="block mb-2 font-medium">Pick a Date for Entitlements:</label>
+  <input type="date" id="datePicker" name="datePicker" class="border p-2 rounded w-full max-w-sm mb-4" value="{{ today_str }}">
+
+  <div id="entitlementsContainer" class="space-y-4"></div>
+</div>
+
+<script>
+  const shiftData = {{ shiftdata | tojson }};
+  const allEmployees = {{ employees | tojson }};
+  const holidayMap = {{ holiday_map | tojson }};
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: '2-digit' });
+  }
+
+  function renderEntitlements() {
+    const container = document.getElementById('entitlementsContainer');
+    container.innerHTML = '';
+
+    allEmployees.forEach(emp => {
+      const empDiv = document.createElement('div');
+      empDiv.className = "border rounded p-3";
+
+      const header = document.createElement('button');
+      header.className = "w-full text-left font-semibold text-blue-600";
+      header.textContent = emp.name;
+      header.onclick = () => {
+        details.classList.toggle('hidden');
+      };
+
+      const details = document.createElement('div');
+      details.className = "mt-2 hidden";
+
+      let totalMins = 0;
+      (shiftData[emp.id] || []).forEach(entry => {
+        totalMins += entry.mins || 0;
+        const p = document.createElement('p');
+        p.textContent = `${formatDate(entry.date)} — ${entry.type} — ${entry.mins || 0} mins`;
+        details.appendChild(p);
+      });
+
+      const totalHours = Math.floor(totalMins / 60);
+      const remMins = totalMins % 60;
+      const totalSummary = document.createElement('p');
+      totalSummary.className = "font-bold mt-2";
+      totalSummary.textContent = `Total: ${totalHours}h ${remMins}m`;
+      details.appendChild(totalSummary);
+
+      empDiv.appendChild(header);
+      empDiv.appendChild(details);
+      container.appendChild(empDiv);
+    });
+  }
+
+  renderEntitlements();

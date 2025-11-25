@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , format_phone_number, back_button , print_this %}
+{% block content %}
+<style>
+  body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+</style>
+<h2 class="text-2xl font-bold mb-6 text-gray-800">CB Shorties</h2>
+
+<form id="heatmapForm" class="mb-8 flex flex-wrap items-center gap-6 bg-white p-4 rounded shadow-md">
+  <div class="flex flex-col">
+    <label for="dept" class="font-semibold text-sm mb-1 text-gray-700">Department</label>
+    <select name="dept" id="dept" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <option value="">All</option>
+      {% for dept in all_departments %}
+        <option value="{{ dept }}" {% if selected_dept == dept %}selected{% endif %}>{{ dept }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="flex flex-col">
+    <label for="shift" class="font-semibold text-sm mb-1 text-gray-700">Shift</label>
+    <select name="shift" id="shift" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <option value="">All</option>
+      {% for s in all_shifts %}
+        <option value="{{ s }}" {% if selected_shift == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="flex flex-col">
+    <label for="emp" class="font-semibold text-sm mb-1 text-gray-700">Employee</label>
+    <select name="emp" id="emp" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <option value="">All</option>
+      {% for e in all_emps %}
+        <option value="{{ e.emp_id }}" {% if selected_emp == e.emp_id %}selected{% endif %}>{{ e.name }} ({{ e.emp_id }})</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<div class="mb-6 flex gap-4">
+  {{back_button()}}
+  <button type="button" onclick="switchView('weekday')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded shadow transition">Weekday View</button>
+  <button type="button" onclick="switchView('cycle')" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded shadow transition">Cycle View</button>
+  {{print_this()}}
+</div>
+
+<div class="bg-white p-4 rounded shadow-md">
+  <canvas id="barChart" width="800" height="500"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let weekdayData = {{ shorties_weekday | tojson }};
+  let cycleData = {{ shorties_cycle | tojson }};
+  let labelsWeekday = {{ labels_weekday | tojson }};
+  let labelsCycle = {{ labels_cycle | tojson }};
+
+  let currentView = "weekday";
+  let barChart;
+
+  function renderBar(labels, data) {
+    const datasets = [
+      {
+        label: "CB",
+        data: data["CB"],
+        backgroundColor: "rgba(255, 99, 132, 0.6)",
+        stack: "stack1"
+      },
+      {
+        label: "SHORTIE",
+        data: data["SHORTIE"],
+        backgroundColor: "rgba(54, 162, 235, 0.6)",
+        stack: "stack1"
+      }
+    ];
+
+    if (barChart) barChart.destroy();
+    barChart = new Chart(document.getElementById("barChart"), {
+      type: "bar",
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: "CB vs Shorties",
+            font: { size: 18 }
+          },
+          legend: {
+            labels: { font: { size: 12 } }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { font: { size: 12 } }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: { stepSize: 1 }
+          }
+        }
+      }
+    });
+  }
+
+  function switchView(view) {
+    currentView = view;
+    if (view === "weekday") {
+      renderBar(labelsWeekday, weekdayData);
+    } else {
+      renderBar(labelsCycle, cycleData);
+    }
+  }
+
+  switchView("weekday");
+
+  document.querySelector("#heatmapForm").addEventListener("change", async () => {
+    const params = new URLSearchParams(new FormData(document.querySelector("#heatmapForm")));
+    params.append("json", "true");
+
+    const res = await fetch("/shorties?" + params.toString());
+    const data = await res.json();
+
+    weekdayData = data.shorties_weekday;
+    cycleData = data.shorties_cycle;
+    labelsWeekday = data.labels_weekday;
+    labelsCycle = data.labels_cycle;
+
+    if (currentView === "weekday") {
+      renderBar(labelsWeekday, weekdayData);
+    } else {
+      renderBar(labelsCycle, cycleData);
+    }
+  });
+</script>
+
+<div class="mt-6">
+  {{ back_button() }}
+</div>
+
+{% endblock %}

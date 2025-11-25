@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs, manager_OK_leave, back_button %}
+{% block content %}
+
+{% set has_sick = false %}
+{% set has_leave = false %}
+
+{% for emp_id, requests in grouped_pending.items() %}
+  {% for r in requests %}
+    {% if r.entries and r.entries[0].get("source_file") == "sick" %}
+      {% set has_sick = true %}
+    {% elif r.entries and r.entries[0].get("source_file") == "leave" %}
+      {% set has_leave = true %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+<style>
+  body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+</style>
+<h2 class="text-xl font-bold mb-4">Manager Cover Dashboard</h2>
+
+
+{# 🤒 Sick Leave Section #}
+{% if has_sick %}
+  <h3 class="text-lg font-semibold text-red-700 mb-2">🤒 Sick Leave</h3>
+{% endif %}
+
+{% for emp_id, requests in grouped_pending.items() %}
+  {% set emp_name = all_emp_ids.get(emp_id, {}).get("name", "Unknown") %}
+  {% set shift_name = all_emp_ids.get(emp_id, {}).get("shift", "Unknown") %}
+  {% for r in requests %}
+    {% if r.entries and r.entries[0].get("source_file") == "sick" %}
+      {% set status = r.entries[0].get("coverage_status", "pending") %}
+      <div class="flex items-center justify-between w-full">
+
+          <h4 class="font-semibold text-md text-gray-800">{{ emp_name }} ({{ emp_id }}) {{shift_name}} </h4>
+          {% if status != "covered"%}
+          <div class="flex justify-end mt-2 sm:mt-0">
+          <a href="/suggest-covers?emp_id={{ emp_id }}&sourse=sick&backto=manager-covers" title="Find available staff to cover this shift"
+
+            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded shadow text-sm flex items-center gap-2 group transition-all duration-200">
+            <span class="animate-pulse group-hover:animate-none">🤔</span>
+            <span>Who’s got this?</span>
+          </a>
+          </div>
+          {%endif%}
+        </div>
+          <li class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="inline-block text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700">🤒 Sick Call</span>
+                <span class="text-sm text-gray-800 font-medium">
+                <b> {{ datetime.strptime(r.date, '%Y-%m-%d').strftime('%a %d-%b') }}</b>
+                </span>
+              </div>
+              <div class="text-sm text-gray-700">
+                {{ r.types_used | join(' + ') }} ({{ min_to_hrs(r.total_minutes) }}) {{ r.shift_type }}
+              </div>
+              {% if r.entries[0].notes %}
+                <div class="text-sm text-gray-600 italic">Reason: {{ r.entries[0].notes }}</div>
+              {% endif %}
+              <details class="text-sm text-gray-600 mt-1">
+                <summary class="cursor-pointer">View sick blocks</summary>
+                <ul class="ml-4 mt-1">
+                  {% for e in r.entries %}
+                    <li>
+                      {% if e.type_expanded and '=' in e.type_expanded %}
+                        {% for part in e.type_expanded.split() %}
+                          {% set label, mins = part.split('=') %}
+                          {{ label }} – {{ min_to_hrs(mins | int) }}<br>
+                        {% endfor %}
+                      {% else %}
+                        {{ e.type_shift }} – {{ min_to_hrs(e.get("shift_minutes", 0)) }}
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </details>
+
+            </div>
+            <div class="flex items-center gap-2 mt-2 sm:mt-0">
+              <span class="inline-block text-xs px-2 py-0.5 rounded
+                {% if status == 'pending' %} bg-yellow-200 text-yellow-800
+                {% elif status in ['approved', 'covered'] %} bg-green-200 text-green-800
+                {% elif status == 'denied' %} bg-red-200 text-red-800
+                {% endif %}
+              ">
+                {% if status == 'pending' %}🟡 waiting
+                {% elif status == 'covered' %}🟢 Covered : <b>{{ r.cover_names | join(', ') }}</b>
+                {% elif status == 'approved' %}✅ Approved
+                {% elif status == 'denied' %}❌ Denied
+                {% endif %}
+              </span>
+              
+
+              {% set title = "Approved it" if status != 'pending' else "Approved it with no cover" %}
+              {{ manager_OK_leave(
+                  me,
+                  emp_id=emp_id,
+                  shift="Approved by Manager",
+                  type_shift=r.types_used | join(', '),
+                  cover_by=r.cover_by,
+                  shift_name=r.shift_name,
+                  shift_type=r.shift_type,
+                  date=r.date,
+                  wants_emp_id=emp_id,
+                  title=title,
+                  letype="sick",
+                  backto = "manager-covers"
+              ) }}
+
+            </div>
+          </li>
+        </ul>
+      </div>
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+{# 📝 Leave Request Section #}
+{% if has_leave %}
+  <h3 class="text-lg font-semibold text-blue-700 mb-2">📝 Leave Requests</h3>
+{% endif %}
+
+{% for emp_id, requests in grouped_pending.items() %}
+  {% set emp_name = all_emp_ids.get(emp_id, {}).get("name", "Unknown") %}
+  {% for r in requests %}
+    {% if r.entries and r.entries[0].get("source_file") == "leave" %}
+      {% set status = r.entries[0].get("coverage_status", "pending") %}
+      <div class="flex items-center justify-between w-full">
+
+          <h4 class="font-semibold text-md text-gray-800">{{ emp_name }} ({{ emp_id }})</h4>
+          {% if status != "covered"%} 
+          <div class="flex justify-end mt-2 sm:mt-0">
+          <a href="/suggest-covers?emp_id={{ emp_id }}&sourse=leave&backto=manager-covers" title="Find available staff to cover this shift"
+
+            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded shadow text-sm flex items-center gap-2 group transition-all duration-200">
+            <span class="animate-pulse group-hover:animate-none">🤔</span>
+            <span>Who’s got this?</span>
+          </a>
+          </div>
+          {%endif%}
+        </div>
+        <ul class="space-y-2">
+          <li class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="inline-block text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700">📝 Leave Request</span>
+                <span class="text-sm text-gray-800 font-medium">
+                  {{ datetime.strptime(r.date, '%Y-%m-%d').strftime('%a %d-%b') }}
+                </span>
+              </div>
+              <div class="text-sm text-gray-700">
+                {{ r.types_used | join(' + ') }} ({{ min_to_hrs(r.total_minutes) }}) {{ r.shift_type }}
+              </div>
+              {% if r.entries[0].notes %}
+                <div class="text-sm text-gray-600 italic">Reason: {{ r.entries[0].notes }}</div>
+              {% endif %}
+              <details class="text-sm text-gray-600 mt-1">
+                <summary class="cursor-pointer">View leave blocks</summary>
+                <ul class="ml-4 mt-1">
+                  {% for e in r.entries %}
+                    <li>{{ e.type_shift }} — {{ min_to_hrs(e.get("shift_minutes", 0)) }}</li>
+                  {% endfor %}
+                </ul>
+              </details>
+            </div>
+            <div class="flex items-center gap-2 mt-2 sm:mt-0">
+              <span class="inline-block text-xs px-2 py-0.5 rounded
+                {% if status == 'pending' %} bg-yellow-200 text-yellow-800
+                {% elif status in ['approved', 'covered'] %} bg-green-200 text-green-800
+                {% elif status == 'denied' %} bg-red-200 text-red-800
+                {% endif %}
+              ">
+                {% if status == 'pending' %}🟡 waiting
+                {% elif status == 'covered' %}🟢 Covered : <b>{{ r.cover_names | join(', ') }}</b>
+                {% elif status == 'approved' %}✅ Approved
+                {% elif status == 'denied' %}❌ Denied
+                {% endif %}
+              </span>
+              {% set title = "Approved it" if status != 'pending' else "Approved it with no cover" %}
+              {{ manager_OK_leave(
+                  me,
+                  emp_id=emp_id,
+                  shift="Approved by Manager",
+                  type_shift=r.types_used | join(', '),
+                  cover_by=r.cover_by,
+                  shift_name=r.shift_name,
+                  shift_type=r.shift_type,
+                  date=r.date,
+                  wants_emp_id=emp_id,
+                  title=title,
+                  letype="leave",
+                  backto = "manager-covers"
+              ) }}
+            </div>
+          </li>
+        </ul>
+      </div>
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+{{ back_button() }}
+{% endblock %}

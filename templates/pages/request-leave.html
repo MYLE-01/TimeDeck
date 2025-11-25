@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs, manager_OK_leave %}
+{% block content %}
+
+<h2 class="text-xl font-bold mb-4">Leave Request For: {{ emp_name }}</h2>
+
+{% if leave_requests %}
+  <div class="bg-yellow-100 border border-yellow-300 rounded p-4 mb-5">
+    <h3 class="font-bold text-lg mb-2">Pending Leave Requests</h3>
+    <ul class="space-y-2 pl-5 list-disc">
+  {% for r in leave_requests %}
+  <li class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      {{ datetime.strptime(r.date, '%Y-%m-%d').strftime('%a %d-%b') }} —
+      {{ r.type_shift }} {{ min_to_hrs(r.shift_minutes) }}
+      {% if r.notes %} {% endif %}
+    </div>
+
+    <div class="flex items-center gap-2 mt-1 sm:mt-0">
+      {% set status = r.coverage_status %}
+      <span class="inline-block text-xs px-2 py-0.5 rounded
+        {% if status == 'pending' %} bg-yellow-200 text-yellow-800
+        {% elif status == 'approved' or status == 'covered' %} bg-green-200 text-green-800
+        {% elif status == 'denied' %} bg-red-200 text-red-800
+        {% endif %}
+      ">
+        {% if status == 'pending' %}🟡 waiting for coverage
+        {% elif status == 'covered' %}🟢 Covered waiting for approval
+        {% elif status == 'approved' %}✅ Approved
+        {% elif status == 'denied' %}❌ Denied
+        {% endif %}
+      </span>
+
+      
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+  </div>
+{% endif %}
+
+
+
+<!-- Leave Drawdown Summary -->
+<h3 class="text-lg font-bold mt-6 mb-2">Leave Drawdown Summary</h3>
+<table class="table-auto border-collapse border border-gray-300 w-full" id="summaryTable">
+  <thead>
+    <tr>
+      <th class="px-4 py-2 text-left">Leave Type</th>
+      <th class="px-4 py-2 text-right">Entitled</th>
+      <th class="px-4 py-2 text-right">Used</th>
+      <th class="px-4 py-2 text-right">Remaining</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for code, summary in drawdown_summary.items() %}
+      {% set pct = (summary.remaining / summary.entitled * 100) if summary.entitled else 0 %}
+      {% set color = "bg-green-100" %}
+      {% if pct < 25 %}
+        {% set color = "bg-red-100" %}
+      {% elif pct < 50 %}
+        {% set color = "bg-amber-100" %}
+      {% endif %}
+      {% if summary.entitled %}
+      <tr class="{{ color }}" data-code="{{ code }}">
+        <td class="px-4 py-2 font-semibold">{{ code }}</td>
+        <td class="px-4 py-2 text-right" data-role="entitled">{{ min_to_hrs(summary.entitled) }}</td>
+        <td class="px-4 py-2 text-right" data-role="used">{{ min_to_hrs(summary.used) }}</td>
+        <td class="px-4 py-2 text-right" data-role="remaining">{{ min_to_hrs(summary.remaining) }}</td>
+      </tr>
+      {% endif %}
+      
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Calendar Navigation -->
+<div class="max-w-xl mx-auto mt-6">
+  <div class="flex justify-between items-center mb-2">
+    <a href="#" onclick="navigateMonth({{ month - 1 if month > 1 else 12 }}, {{ year - 1 if month == 1 else year }})"
+       class="text-xl font-bold px-2 hover:text-blue-600">⬅️</a>
+    <h2 class="text-lg font-bold text-center">
+      {{ now.replace(month=month, year=year).strftime('%B %Y') }}
+    </h2>
+    <a href="#" onclick="navigateMonth({{ month + 1 if month < 12 else 1 }}, {{ year + 1 if month == 12 else year }})"
+       class="text-xl font-bold px-2 hover:text-blue-600">➡️</a>
+  </div>
+
+  <!-- Weekday Headers -->
+  <div class="grid grid-cols-7 text-center font-semibold text-gray-700 mt-6 mb-1">
+    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="grid grid-cols-7 gap-1">
+    {% for _ in range(weekday_offset) %}
+      <div class="p-2"></div>
+    {% endfor %}
+
+    {% for day in calendar_days %}
+      {% set entry = roster_map.get(day.date) %}
+      {% set shift = entry.shift_type if entry else "" %}
+      {% set bg = "" %}
+      {% if entry and entry.type_shift == "SHIFT" %}
+        {% if shift == "D" %}
+          {% set bg = "bg-yellow-200" %}
+        {% elif shift == "N" %}
+          {% set bg = "bg-blue-200 text-white" %}
+        {% endif %}
+      {% endif %}
+      <div data-date="{{ day.date }}"
+           data-mins="{{ entry.shift_minutes if entry else 0 }}"
+           data-shift="{{ shift }}"
+           class="p-2 border rounded text-center cursor-pointer {{ bg }}">
+        {{ "%02d"|format(day.day) }}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Leave Request Form -->
+<form method="post" action="/submit-leave" class="mt-6">
+  <input type="hidden" name="requests" id="leaveRequests" />
+  <table id="leaveTable" class="table-auto border-collapse border border-gray-300 w-full">
+    <thead>
+      <tr>
+        <th class="px-4 py-2 font-semibold">Date</th>
+        <th class="px-4 py-2 font-semibold">Type of Leave</th>
+        <th class="px-4 py-2 font-semibold">Hours</th>
+        <th class="px-4 py-2 font-semibold">Comments</th>
+        <th class="px-4 py-2 font-semibold">Remove</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button type="submit"
+          class="mt-4 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded shadow">
+    Submit Request
+  </button>
+</form>
+
+<!-- JavaScript -->
+<script>
+  const empId = "{{ emp_id }}";
+  const shift_Name = "{{ shift }}";
+
+  function navigateMonth(month, year) {
+  const empId = document.getElementById("employeeSelect")?.value || "{{ emp_id }}";
+  if (!empId) {
+    alert("Please select an employee first.");
+    return;
+  }
+
+  window.location.href = `/request-leave?emp_id=${encodeURIComponent(empId)}&month=${month}&year=${year}`;
+}
+
+
+
+
+
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = date.toLocaleString("en-NZ", { month: "short" });
+  return `${day}-${month}`;
+  }
+
+  function updateCalendarUsage() {
+    const usedByDate = getUsedMinutesByDate();
+
+    document.querySelectorAll("[data-date]").forEach(cell => {
+      const date = cell.getAttribute("data-date");
+      const total = parseInt(cell.getAttribute("data-mins")) || 0;
+      const used = usedByDate[date] || 0;
+      const remaining = total - used;
+
+      // Remove any existing progress bar
+      const oldBar = cell.querySelector(".usage-bar");
+      if (oldBar) oldBar.remove();
+
+      // Create and add new progress bar
+      if (total !== 0) {  // No shift, no bar
+        const bar = document.createElement("div");
+        bar.className = "usage-bar mt-1 rounded";
+        bar.style.height = "4px";
+        bar.style.width = `${Math.min((used / total) * 100, 100)}%`;
+        bar.style.backgroundColor = used > total
+          ? "#f87171"   // red
+          : used === total
+          ? "#4ade80"   // green
+          : "#fbbf24";  // amber
+
+        cell.appendChild(bar);
+      }
+
+
+      // Tooltip
+      cell.setAttribute("title", 
+        used > total
+          ? `Overfilled: ${minToHrs(used)} / ${minToHrs(total)} (${minToHrs(used - total)} over)`
+          : `Used: ${minToHrs(used)} / ${minToHrs(total)} (${minToHrs(remaining)} left)`
+      );
+
+      // Optional background color
+      cell.classList.remove("bg-green-300", "bg-red-300");
+      if (used > total && total > 0) {
+        cell.classList.add("bg-red-300");
+      } else if (remaining <= 0 && total > 0) {
+        cell.classList.add("bg-green-300");
+      }
+    });
+
+  }
+
+  function getUsedMinutesByDate() {
+    const totals = {};
+    requests.forEach(r => {
+      totals[r.date] = (totals[r.date] || 0) + (r.shift_minutes || 0);
+    });
+    return totals;
+  }
+
+  function minToHrs(mins) {
+    const hours = Math.floor(mins / 60);
+    const remainder = mins % 60;
+
+    const hh = String(hours).padStart(2, "0");
+    const mm = String(remainder).padStart(2, "0");
+
+    return `${hh}:${mm}`;
+  }
+
+
+
+  function convertThisToMins(time) {
+    const thisTime = String(time).toLowerCase().trim();
+    if (!thisTime) return 0;
+
+    let answer;
+    if (thisTime.endsWith("h") && Number.isFinite(Number(thisTime.slice(0, -1)))) {
+      answer = parseInt(thisTime.slice(0, -1), 10) * 60;
+    } else if (thisTime.includes(".")) {
+      const float = parseFloat(thisTime);
+      answer = isNaN(float) ? 0 : float * 60;
+    } else if (thisTime.includes(":")) {
+      const [hrs, mins] = thisTime.split(":").map(Number);
+      answer = (hrs || 0) * 60 + (mins || 0);
+    } else if (Number.isFinite(Number(thisTime))) {
+      answer = parseInt(thisTime, 10);
+    } else {
+      throw new Error(`Unknown time format: '${time}'`);
+    }
+
+    return Math.floor(answer);
+  }
+
+  function pulse(cell) {
+    cell.classList.add("animate-pulse");
+    setTimeout(() => cell.classList.remove("animate-pulse"), 300);
+  }
+
+  const leaveTypes = {{ leave_types | tojson }};
+  const leaveSummary = {{ drawdown_summary | tojson }};
+  const leaveTotals = {};
+  for (const [type, summary] of Object.entries(leaveSummary)) {
+    leaveTotals[type] = { entitled: summary.entitled, used: 0 };
+  }
+
+  const requests = [];
+  const preloaded = decodeURIComponent("{{ requests_json | default('', true) }}");
+
+  if (preloaded) {
+    try {
+      const data = JSON.parse(preloaded);
+      data.forEach(entry => {
+        addRow(entry.date, entry.shift_minutes || 0, entry.type_shift || "PAL", entry.notes || "");
+      });
+    } catch (e) {
+      console.warn("Failed to restore previous selections:", e);
+    }
+  }
+
+  document.querySelectorAll("[data-date]").forEach(cell => {
+    const date = cell.getAttribute("data-date");
+    const mins = parseInt(cell.getAttribute("data-mins")) || 0;
+    const shift = cell.getAttribute("data-shift") || "";
+
+    cell.addEventListener("click", () => {
+      const defaultType = leaveTypes[0] || "PAL";
+      addRow(date, mins, defaultType, "", shift);
+
+      cell.classList.add("ring", "ring-amber-500");
+    });
+  });
+
+  function addRow(date, mins, type = "PAL", notes = "", shift = "") {
+    const rowColor = shift === "D" ? "bg-yellow-100" : shift === "N" ? "bg-blue-100 text-black" : "";
+    const shift_type = shift === "D" ? "Day" : shift === "N" ? "Night" : "";
+    const row = document.createElement("tr");
+    row.className = rowColor;
+    const entitledTypes = leaveTypes.filter(t => leaveSummary[t]?.entitled > 0);
+    
+    const entry = { 
+      date, 
+      shift_minutes: 0, 
+      type_shift: type,
+      notes , 
+      emp_id: empId,
+      shift_name: shift_Name,
+      shift_type: shift_type
+    };
+    requests.push(entry);
+
+    row.innerHTML = `
+      <td class="px-2 py-1">${formatDate(date)}</td>
+      <td class="px-2 py-1">
+        <select class="border px-2 py-1 rounded w-full">
+          ${entitledTypes.map(t => `<option value="${t}" ${t === type ? "selected" : ""}>${t}</option>`).join("")}
+        </select>
+      </td>
+      <td class="px-2 py-1">
+        <input type="text" class="border px-2 py-1 rounded w-full mins-input" value="${minToHrs(mins)}" title="Examples: 2h, 2.5, 2:30, 150" />
+        <input type="hidden" class="hidden-emp_ID" value="${empId}" />
+        <input type="hidden" class="hidden-shift_name" value="${shift_Name}" />
+        <input type="hidden" class="hidden-shift_type" value="${shift_type}" />
+      </td>
+      <td class="px-2 py-1">
+        <textarea class="border px-2 py-1 rounded w-full" rows="1">${notes}</textarea>
+      </td>
+      <td class="px-2 py-1 text-center">
+        <button type="button" class="text-red-600 font-bold remove-btn">✖</button>
+      </td>
+    `;
+
+    const select = row.querySelector("select");
+    const minsInput = row.querySelector(".mins-input");
+    const notesInput = row.querySelector("textarea");
+
+    function syncRowToRequests() {
+      try {
+        entry.shift_minutes = convertThisToMins(minsInput.value.trim());
+      } catch {
+        entry.shift_minutes = 0;
+      }
+      entry.type_shift = select.value;
+      entry.notes = notesInput.value.trim();
+
+      updateHiddenInput();
+      updateLeaveSummary();
+    }
+
+
+    select.addEventListener("change", syncRowToRequests);
+    select.addEventListener("blur", syncRowToRequests);
+    minsInput.addEventListener("input", syncRowToRequests);
+    minsInput.addEventListener("blur", syncRowToRequests);
+    notesInput.addEventListener("input", syncRowToRequests);
+    notesInput.addEventListener("blur", syncRowToRequests);
+
+    row.querySelector(".remove-btn").addEventListener("click", () => {
+      row.remove();
+      const index = requests.findIndex(r => r.date === date);
+      if (index !== -1) requests.splice(index, 1);
+      updateHiddenInput();
+      updateLeaveSummary();
+      document.querySelector(`[data-date="${date}"]`)?.classList.remove("ring", "ring-amber-500");
+    });
+
+    document.querySelector("#leaveTable tbody").appendChild(row);
+    updateHiddenInput();
+    updateLeaveSummary();
+    syncRowToRequests(); // Trigger initial sync
+    pulse(row);
+  }
+
+  function updateHiddenInput() {
+    document.getElementById("leaveRequests").value = JSON.stringify(requests);
+  }
+
+  function updateLeaveSummary() {
+    for (const type in leaveTotals) {
+      leaveTotals[type].used = leaveSummary[type]?.used || 0;
+    }
+
+    requests.forEach(entry => {
+      if (leaveTotals[entry.type_shift]) {
+        leaveTotals[entry.type_shift].used += entry.shift_minutes || 0;
+      }
+    });
+
+    const summaryRows = document.querySelectorAll("#summaryTable tbody tr");
+    summaryRows.forEach(row => {
+      const code = row.getAttribute("data-code");
+      if (leaveTotals[code]) {
+        const entitled = leaveTotals[code].entitled;
+        const used = leaveTotals[code].used;
+        const remaining = entitled - used;
+
+        const entitledCell = row.querySelector('[data-role="entitled"]');
+        const usedCell = row.querySelector('[data-role="used"]');
+        const remainingCell = row.querySelector('[data-role="remaining"]');
+
+        entitledCell.textContent = minToHrs(entitled);
+        usedCell.textContent = minToHrs(used);
+        remainingCell.textContent = minToHrs(remaining);
+
+        row.className = "bg-green-100";
+        const pct = entitled ? (remaining / entitled) * 100 : 0;
+        if (pct < 25) row.className = "bg-red-100";
+        else if (pct < 50) row.className = "bg-amber-100";
+
+        pulse(usedCell);
+        pulse(remainingCell);
+      }
+      
+    });
+  updateCalendarUsage();
+  }
+</script>
+{% endblock %}

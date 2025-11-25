@@ -1,0 +1,58 @@
+{
+  "Shifts": [
+    {
+      "name": "A Shift",
+      "first": "14 July 2025",
+      "roster_pattern": "4x4x12",
+      "shift_sequence": "DDNN****"
+    },
+    {
+      "name": "B Shift",
+      "first": "16 July 2025",
+      "roster_pattern": "4x4x12",
+      "shift_sequence": "DDNN****"
+    },
+    {
+      "name": "C Shift",
+      "first": "18 July 2025",
+      "roster_pattern": "4x4x12",
+      "shift_sequence": "DDNN****"
+    },
+    {
+      "name": "D Shift",
+      "first": "20 July 2025",
+      "roster_pattern": "4x4x12",
+      "shift_sequence": "DDNN****"
+    },
+    {
+      "name": "E Shift",
+      "first": "30 Jun 2025",
+      "roster_pattern": "5X2X9",
+      "shift_sequence": "DDDDD**"
+    },
+    {
+      "name": "F Shift",
+      "first": "07 Jul 2025",
+      "roster_pattern": "4x4x12",
+      "shift_sequence": "DDDD****"
+    },
+    {
+      "name": "G Shift",
+      "first": "12 Jul 2025",
+      "roster_pattern": "4x3x11",
+      "shift_sequence": "DDDD***"
+    },
+    {
+      "name": "B Shift Share",
+      "first": "14 July 2025",
+      "roster_pattern": "4x12x12",
+      "shift_sequence": "DDDD************"
+    },
+    {
+      "name": "Mon-Fri",
+      "first": "02 Jun 2025",
+      "roster_pattern": "5x2x9",
+      "shift_sequence": "DDDDD**"
+    }
+  ]
+}

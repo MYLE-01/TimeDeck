@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6">
+  <h1 class="text-2xl font-bold mb-4">🧑‍💼 Job Titles & 🏢 Departments</h1>
+    <p>Must save each line.</p>
+  <form method="post" action="/jobtitles/save" class="space-y-8">
+    <!-- Job Titles Table -->
+    <div>
+      <h2 class="text-xl font-semibold mb-2">🧑‍💼 Job Titles</h2>
+      <table class="w-full border border-gray-300 rounded-lg">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 border">Code</th>
+            <th class="p-2 border">Title</th>
+            <th class="p-2 border">can have people<br>reporting to them?</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for key, title in titles.items() %}
+          <tr class="border-t hover:bg-blue-50 transition">
+            <!-- internal key -->
+            <td class="border p-2">
+              <input type="text" name="key" value="{{ key }}" class="w-full border rounded px-2 py-1"/>
+            </td>
+
+            <!-- display title -->
+            <td class="border p-2">
+              <input type="text" name="titles" value="{{ title }}" class="w-full border rounded px-2 py-1"/>
+            </td>
+
+            <!-- checkbox for reporting manager -->
+            <td class="border p-2 text-center">
+              <input type="checkbox" name="managers" value="{{ key }}"
+                     {% if key in reporting_managers %}checked{% endif %}/>
+            </td>
+          </tr>
+          {% endfor %}
+
+          <!-- Empty row for adding new title -->
+          {% if me.job_title in ["Manager", "L8"] %}
+          <tr class="border-t hover:bg-blue-50 transition">
+            <td class="border p-2">
+              <input type="text" name="titles" placeholder="Add new title..." class="w-full border rounded px-2 py-1"/>
+            </td>
+            <td class="border p-2">
+              <input type="text" name="titles" placeholder="Title..." class="w-full border rounded px-2 py-1"/>
+            </td>
+            <td class="border p-2 text-center">
+              <input type="checkbox" disabled/>
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Departments Table -->
+    <div>
+      <h2 class="text-xl font-semibold mb-2"> 🏢 Departments</h2>
+      <table class="w-full border border-gray-300 rounded-lg">
+        <thead class="bg-gray-100">
+          <tr >
+            <th class="p-2 border">Department</th>
+            <p>to DELETE department just delete the text and save.</p>
+          </tr>
+        </thead>
+        <tbody>
+          {% for key, dept in departments.items() %}
+          <tr class="border-t hover:bg-blue-50 transition">
+            <td class="border p-2">
+              <input type="text" name="departments" value="{{ dept }}" class="w-full border rounded px-2 py-1"/>
+            </td>
+          </tr>
+          {% endfor %}
+
+          <!-- Empty row for adding new -->
+          {% if me.job_title in ["Manager", "L8"] %}
+          <tr class="border-t hover:bg-blue-50 transition">
+            <td class="border p-2">
+              <input type="text" name="departments" placeholder="Add new department..." class="w-full border rounded px-2 py-1"/>
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+    {% if me.job_title in ["Manager", "L8"] %}
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700">
+        Save Changes
+      </button>
+    {% endif %}
+    </div>
+  </form>
+  <br>
+  <br>
+  <div class="flex justify-center ">
+    <a href="/edit-entitlements" class="bg-blue-500 text-white px-4 py-2 rounded">Edit Entitlements</a>&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="/shifts" class="bg-blue-500 text-white px-4 py-2 rounded">Edit Shifts</a>
+</div>
+  <div class="mt-6 text-gray-600">
+    <p><strong>Note:</strong> Changes to job titles and departments will not affect existing employee records until they are updated.</p>
+  </div>
+</div>
+{% endblock %}

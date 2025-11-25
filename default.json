@@ -1,0 +1,39 @@
+{
+  "off_codes": [
+    "PSL",
+    "PNW",
+    "BVT",
+    "LSL",
+    "MET",
+    "USL",
+    "PPL",
+    "ADT",
+    "LWP",
+    "PAL",
+    "ACC"
+  ],
+  "working_codes": [
+    "CB",
+    "SHIFT"
+  ],
+  "min_blind_codes": [
+    "MET",
+    "TRE"
+  ],
+  "notes": {
+    "SHIFT": "Where all Hours are stored",
+    "PNW": "Paid Not Work",
+    "CB": "Call Back",
+    "LWP": "Leave Without Pay",
+    "PAL": "Paid Annual Leave",
+    "ADT": "Annual Day Off",
+    "LSL": "Long Service",
+    "PSL": "Paid Sick Leave",
+    "USL": "Unpaid Sick Leave",
+    "ACC": "Accident Leave",
+    "BVT": "Bereavement Leave",
+    "PPL": "Parental Leave",
+    "TRE": "Training Leave",
+    "MET": "Meeting"
+  }
+}

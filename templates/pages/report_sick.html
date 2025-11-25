@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , format_phone_number, back_button%}
+{% block content %}
+<style>
+  body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+</style>
+<div class="flex flex-col items-center pt-5 pb-6">
+
+
+<h2 class="text-xl font-semibold mb-4">SomeOne 📞 Call-In</h2>
+
+<form method="post" action="/api/report-sick" class="space-y-4 max-w-md">
+
+<div>
+  <label for="date" class="block font-medium">Date</label>
+  <select size="5" name="date" id="date" class="w-full border rounded px-3 py-2">
+    {% for d in date_options %}
+      <option value="{{ d.value }}" {% if d.value == default_date %}selected{% endif %}>
+        {{ d.label }}
+      </option>
+    {% endfor %}
+  </select>
+</div>
+<button type="button" id="today-btn" class="bg-gray-200 px-3 py-1 rounded shadow hover:bg-gray-300">
+  Today
+</button>
+
+
+  <div>
+    <label for="emp_id" class="block font-medium">One of those Employee called IN</label>
+    <select size = "7" name="emp_id" id="emp_id" class="w-full border rounded px-3 py-2">
+      {% for emp in employees %}
+        <option value="{{ emp.id }}" data-shift-type="{{ emp.shift_type }}" >{{ emp.name }} - {{emp.shift_type}} {{emp.shift}}: {{emp.notes}}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+<div>
+  <label for="leave_type">Leave Type</label>
+  <select name="leave_type" id="leave_type" class="w-full border rounded px-3 py-2">
+    {% for code in off_codes %}
+      <option value="{{ code }}" {% if code == "PSL" %}selected{% endif %} >
+        {{ code }} - {{ leave_meanings.get(code, "Unknown") }}
+      </option>
+    {% endfor %}
+  </select>
+</div>
+
+  <div>
+    <input type="hidden" name="shift_type" id="shift_type" value="">
+  </div>
+
+  <div>
+    <label for="reason" class="block font-medium">Reason (optional)</label>
+    <input type="text" name="reason" id="reason" class="w-full border rounded px-3 py-2" placeholder="e.g. Flu, Family emergency">
+  </div>
+
+<button id="submit-btn" type="submit" style="display:none" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">
+  Record Sick Leave
+</button>
+
+</form>
+
+<script>
+  function checkFormReady() {
+    const date = document.getElementById("date").value;
+    const emp = document.getElementById("emp_id").value;
+    const btn = document.getElementById("submit-btn");
+
+    btn.style.display = (date && emp) ? "block" : "none";
+  }
+
+  document.getElementById("date").addEventListener("change", checkFormReady);
+  document.getElementById("emp_id").addEventListener("change", checkFormReady);
+
+  document.getElementById("today-btn").addEventListener("click", function () {
+    const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+    const url = new URL(window.location.href);
+    url.searchParams.set("date", today);
+    window.location.href = url.toString();
+  });
+
+  document.getElementById("date").addEventListener("change", function () {
+    const selectedDate = this.value;
+    const url = new URL(window.location.href);
+    url.searchParams.set("date", selectedDate);
+    window.location.href = url.toString();
+  });
+
+  const empSelect = document.getElementById("emp_id");
+  const shiftTypeInput = document.getElementById("shift_type");
+
+  empSelect.addEventListener("change", function () {
+    const selectedOption = empSelect.options[empSelect.selectedIndex];
+    const shiftType = selectedOption.getAttribute("data-shift-type");
+    shiftTypeInput.value = shiftType || "";
+  });
+
+</script>
+
+{{ back_button(label="Back Calander", href="/calendar") }}
+</div>
+{% endblock %}

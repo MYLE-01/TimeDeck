@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TimeDeck Roster Grid</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background-color: #f9f9f9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    tr[data-clickable]:hover {
+      background-color: #e8f4ff;
+      cursor: pointer;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #fff;
+      padding: 20px;
+      border: 2px solid #444;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 400px;
+    }
+    .modal.show {
+      display: block;
+    }
+    .modal input, .modal select {
+      width: 100%;
+      padding: 6px;
+      margin: 8px 0;
+      box-sizing: border-box;
+    }
+    .modal button {
+      margin-right: 10px;
+      padding: 6px 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>TimeDeck Roster View</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Day</th>
+        <th>Shift Type</th>
+        <th>Type Shift</th>
+        <th>Mins</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="roster-table">
+      {% for entry in roster %}
+      <tr data-clickable onclick="openModal({{ loop.index0 }})">
+        <td>{{ entry.date }}</td>
+        <td>{{ entry.day }}</td>
+        <td>{{ entry.shift_type }}</td>
+        <td>{{ entry.type_shift }}</td>
+        <td>{{ entry.mins }}</td>
+        <td>{{ entry.notes }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- 🪟 Edit Modal -->
+  <div class="modal" id="editModal">
+    <h3>Edit Shift Entry</h3>
+    <label>Date: <span id="modal-date"></span></label><br>
+    <label>Shift Type: <span id="modal-shift-type"></span></label><br>
+
+    <select id="modal-type-shift" name="type_shift">
+    <option value="" disabled selected>Choose a type</option>
+    {% for code in change_type_list %}
+        <option value="{{ code }}">{{ code }}</option>
+    {% endfor %}
+    </select>
+
+
+    <label for="modal-cover-emp">Covering EMP ID:</label>
+    <input type="text" id="modal-cover-emp" placeholder="e.g. EMP12345">
+
+    <label for="modal-notes">Notes:</label>
+    <input type="text" id="modal-notes" placeholder="Optional note">
+
+    <button onclick="saveChanges()">Save</button>
+    <button onclick="closeModal()">Cancel</button>
+  </div>
+
+  <script>
+    const roster = {{ roster | tojson }};
+    function renderTable() {
+      // already handled by Jinja template
+    }
+
+    function openModal(index) {
+      const entry = roster[index];
+      document.getElementById("editModal").classList.add("show");
+      document.getElementById("modal-date").innerText = entry.date;
+      document.getElementById("modal-shift-type").innerText = entry.shift_type;
+      document.getElementById("modal-type-shift").value = entry.type_shift;
+      document.getElementById("modal-cover-emp").value = "";
+      document.getElementById("modal-notes").value = entry.notes;
+      document.getElementById("editModal").dataset.index = index;
+    }
+
+    function closeModal() {
+      document.getElementById("editModal").classList.remove("show");
+    }
+
+    function saveChanges() {
+      const index = document.getElementById("editModal").dataset.index;
+      const newType = document.getElementById("modal-type-shift").value;
+      const coverEmp = document.getElementById("modal-cover-emp").value;
+      const notesInput = document.getElementById("modal-notes").value;
+
+      roster[index].type_shift = newType;
+      roster[index].notes = notesInput || `Covered Stephan McKillen's PAL shift ${coverEmp}`;
+      
+      // TODO: Send update to FastAPI backend via fetch()
+      // Example:
+      // fetch("/update_entry/", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(roster[index])
+      // });
+
+      closeModal();
+      location.reload();  // simple refresh for demo purposes
+    }
+  </script>
+
+</body>
+</html>

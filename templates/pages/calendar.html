@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , back_button%}
+{% block content %}
+<style>
+
+#qrPreview {
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+#qrPreview:not(.hidden) {
+  opacity: 1;
+}
+
+@keyframes walkLeft {
+  0% { transform: translateX(-5px); }
+  100% { transform: translateX(5px); }
+}
+@keyframes moveit  {
+  0% { transform: translateX(-20px); }
+  100% { transform: translateX(5px); }
+}
+
+.walking-icon {
+  display: inline-block;
+  animation: walkLeft 1s infinite alternate;
+}
+.bounce_it {
+  display: inline-block;
+  animation: moveit 2s infinite alternate;
+}
+
+@keyframes bounceFade {
+  0%   { transform: translateY(0); opacity: 0; }
+  50%  { transform: translateY(-6px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+
+.shift-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.shift-card {
+  flex: 0 1 180px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f2f2f2;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.shift-card:hover {
+  transform: scale(1.05);
+  background: #e9e9e9;
+}
+
+.shift-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.shift-label {
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+.tooltip-with-arrow::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+
+
+/* --- Folder card styling --- */
+.folder-card {
+  background: linear-gradient(180deg, #fff9e6 0%, #fff3cc 100%);
+  padding: 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  max-width: 600px;
+  width: 100%;
+  margin: 2rem auto;
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+
+}
+
+/* Left tab */
+.folder-tab-left {
+  position: absolute;
+  top: 1rem;
+  left: -1.5rem;
+  width: 1.5rem;
+  height: 2rem;
+  background: #ffe699;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.folder-tab-left:hover { background: #ffd966; }
+
+/* Right tab */
+.folder-tab-right {
+  position: absolute;
+  top: 1rem;
+  right: -1.5rem;
+  width: 1.5rem;
+  height: 2rem;
+  background: #ffe699;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  box-shadow: -2px 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.folder-tab-right:hover { background: #ffd966; }
+
+/* Folded corner effect (optional) */
+.folder-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-top: 1.5rem solid #fff3cc;
+  border-left: 1.5rem solid transparent;
+}
+
+/* Arrow keys and hover highlights */
+.arrow-item:hover {
+  background: #e0e7ff;
+  cursor: pointer;
+}
+
+#arrowControls code {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+/* Print adjustments */
+@media print {
+  button { display: none !important; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+  body { background-color: white !important; }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.cover-panel-enter {
+  animation: fadeSlideIn 0.4s ease-out forwards;
+}
+
+.cover-panel-exit {
+  animation: fadeSlideOut 0.3s ease-in forwards;
+}
+
+
+
+</style>
+<!-- border border-gray-300 rounded-lg p-1 py-1 -->
+ <div id="timelineBlock"></div>
+<div class="flex justify-center ">
+  <div id="Shifts" class="flex flex-wrap items-center gap-x-4 gap-y-2 text-base font-medium my-3"></div>
+</div>
+
+
+  <!-- Filters row -->
+  <div class="flex flex-wrap gap-1 mb-1 justify-center">
+    <!-- Shift 
+    <select id="shiftSelect" class="border p-2 rounded" onchange="updateEmployeeDropdown();loadCalendar();">
+      <option value="" selected>Select Shift</option>
+      {% for s in shifts %}
+        <option value="{{ s.name }}">{{ s.name }}</option>
+      {% endfor %}
+    </select> -->
+
+    <!-- Employee -->
+
+    {% set selected_emp_id = me.id  %}
+    {% set selected_shift = me.shift %}
+    {% set selected_dept = me.department %}
+    {% if ok[2] == "hidden" %}
+     {% set selected_disabled = "disabled" %}
+    {% endif %}
+    
+
+    {% set reports = report_map.get(me.id, []) %}
+
+    <select id="employeeSelect" 
+    class="border p-2 rounded" 
+    onchange="loadCalendar()" {{selected_disabled}}>
+    <label for="employeeSelect" class="block text-sm font-medium text-gray-700 mb-1">
+    👤 Select Employee
+    </label>
+
+      <option value="" {% if not selected_emp_id %}selected{% endif %}>Select Employee</option>
+
+      {% set grouped = {} %}
+      {% for emp_id, emp in employees.items() %}
+        {% set dept = emp.department %}
+        {% set shift = emp.shift %}
+        {% if shift not in grouped %}
+          {% set _ = grouped.update({shift: []}) %}
+        {% endif %}
+        {% set _ = grouped[shift].append((emp_id, emp.name)) %}
+      {% endfor %}
+
+      {% for s in shifts %}
+        {% set shift = s.name %}
+        {% if shift in grouped %}
+          <optgroup label="{{ shift }}">
+            {% for emp_id, emp_name in grouped[shift]|sort(attribute=1) %}
+              {% set is_disabled = me.job_title == "L7" and emp_id not in reports and emp_id != me.id %}
+
+              <option value="{{ emp_id }}"
+                {% if emp_id == selected_emp_id %}selected{% endif %}
+                {% if is_disabled %}disabled{% endif %}
+              >
+                {{ emp_name }}
+              </option>
+            {% endfor %}
+          </optgroup>
+        {% endif %}
+      {% endfor %}
+    </select>
+
+
+    <!-- Month selection -->
+    <div class="flex items-center gap-2">
+      <button type="button" 
+      class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded" onclick="changeMonth(-1)">&lt;</button>
+      <select id="monthSelect" 
+      class="border p-2 rounded" onchange="loadCalendar()">
+        {% set current_month = now.month %}
+        {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == current_month %}selected{% endif %}>
+            {{ datetime(2000, m, 1).strftime('%B') }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="button" class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded" onclick="changeMonth(1)">&gt;</button>
+    </div>
+
+    <!-- Year -->
+    <select id="yearSelect" class="border p-2 rounded" onchange="loadCalendar()">
+      {% set current_year = now.year %}
+      {% for y in range(current_year - 1, current_year + 3) %}
+        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Calendar grid with clickable folder tabs -->
+  <div class="folder-card relative">
+    <!-- Clickable tabs -->
+    <div class="folder-tab-left" onclick="changeMonth(-1)"></div>
+    <div class="folder-tab-right" onclick="changeMonth(1)"></div>
+
+<!-- Month / Year header -->
+<div class="text-center font-bold text-xl mb-2" id="calendarMonthYear">
+  {{ now.strftime('%B %Y') }}
+</div>
+
+<!-- Weekdays header -->
+<div class="grid grid-cols-7 gap-3 font-semibold text-center text-gray-700 mb-3">
+  <div class="py-1">Sun</div>
+  <div class="py-1">Mon</div>
+  <div class="py-1">Tue</div>
+  <div class="py-1">Wed</div>
+  <div class="py-1">Thu</div>
+  <div class="py-1">Fri</div>
+  <div class="py-1">Sat</div>
+</div>
+
+    <!-- Calendar cells -->
+    <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
+  
+
+  <div id="ShowHolidays"></div>
+  
+  <div id="summaryContainer" class="mt-6"></div>
+  </div>
+  <div id="monthnoteContainer" class="mt-6"></div>
+  <div id="pacingContainer"class="mt-6"></div>
+  
+
+
+  <!-- Arrow controls 
+  <div id="arrowControls" class="no-print flex gap-4 items-center text-gray-700 text-sm font-medium select-none">
+    <div class="arrow-item flex items-center gap-1 px-2 py-1 rounded transition-colors duration-200">
+      <code>↑</code> Change Employee
+    </div>
+    <div class="arrow-item flex items-center gap-1 px-2 py-1 rounded transition-colors duration-200">
+      <code>↓</code> Change Employee
+    </div>
+    <div class="arrow-item flex items-center gap-1 px-2 py-1 rounded transition-colors duration-200">
+      <code>←</code> Change Month
+    </div>
+    <div class="arrow-item flex items-center gap-1 px-2 py-1 rounded transition-colors duration-200">
+      <code>→</code> Change Month
+    </div>
+  </div> -->
+
+  <br>
+  <div class="flex justify-center">
+    <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition duration-200">
+      <span>🖨️ Print This</span>
+    </button>
+  </div>
+</div>
+<script>
+    function changeMonth(offset) {
+      const monthSelect = document.getElementById("monthSelect");
+      const yearSelect = document.getElementById("yearSelect");
+
+      let month = parseInt(monthSelect.value, 10);
+      let year = parseInt(yearSelect.value, 10);
+      month += offset;
+
+      // Adjust year if month goes out of bounds
+      if (month < 1) {
+        month = 12;
+        year -= 1;
+      } else if (month > 12) {
+        month = 1;
+        year += 1;
+      }
+
+      monthSelect.value = month;
+      yearSelect.value = year;
+
+      loadCalendar(); // refresh the calendar
+    }
+
+    function updateCalendarHeader() {
+    const monthSelect = document.getElementById("monthSelect");
+    const yearSelect = document.getElementById("yearSelect");
+    const header = document.getElementById("calendarMonthYear");
+
+    const monthName = new Date(yearSelect.value, monthSelect.value - 1).toLocaleString('default', { month: 'long' });
+    header.textContent = `${monthName} ${yearSelect.value}`;
+  }
+
+  function goToLeaveRequestScreen() {
+
+    const empId = document.getElementById("employeeSelect")?.value;
+    if (!empId) {
+      alert("Please select an employee first.");
+      return;
+    }
+    
+    window.location.href = `/request-leave?emp_id=${encodeURIComponent(empId)}&month=${monthSelect.value}&year=${yearSelect.value}`;
+  }
+    function goToLeavesuggestedScreen() {
+
+    const empId = document.getElementById("employeeSelect")?.value;
+    if (!empId) {
+      alert("Please select an employee first.");
+      return;
+    }
+
+    window.location.href = `/suggest-covers?emp_id=${encodeURIComponent(empId)}&backto=calendar&sourse=leave`;
+  }
+</script>
+<!-- Include JS -->
+   
+<script>
+  const shifts = {{ shift_counts | tojson | safe }};
+  const showLeave = {{ showLeave | lower }};
+
+  let selectedDate = null;
+</script>
+<script src="static/scripts/js_maths.js?v={{ now }}"></script>
+<script src="static/scripts/edit_hours_utils.js?v={{ now }}"></script>
+<script src="static/scripts/edit_hours_modal.js?v={{ now }}"></script>
+<script src="static/scripts/calendar.js?v={{ now }}"></script>
+
+{{ back_button() }}
+
+{% endblock %}

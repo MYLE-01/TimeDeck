@@ -1,0 +1,97 @@
+body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+.crew-menu {
+  position: absolute;
+  background-color: white;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  width: 200px;
+  min-height: 100px;
+  z-index: 50;
+}
+
+.arrow-icon {
+  transition: transform 0.3s ease;
+}
+
+button[aria-expanded="true"] .arrow-icon {
+  transform: rotate(180deg);
+}
+
+.tabs {
+  background-color: #fff;
+  border-bottom: 2px solid #bbb;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  cursor: pointer;
+  background: #eee;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: bold;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.tab-btn.active {
+  background: white;
+  border-bottom-color: #2196f3;
+  color: #2196f3;
+}
+
+.tab-content {
+  background-color: #f8f9fa; /* Bootstrap's light gray */
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ddd;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@media print {
+  .no-print {
+    display: none;
+  }
+
+  .print-only {
+    display: block;
+  }
+}
+
+@media screen {
+  .print-only {
+    display: none;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.splash {
+  animation: fadeIn 2s ease-in;
+}
+
+input[type="date"] {
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  transition: border 0.3s ease;
+}
+
+input[type="date"]:focus {
+  outline: none;
+  border-color: #3b82f6; /* Tailwind blue-500 */
+  box-shadow: 0 0 0 2px #bfdbfe;
+}

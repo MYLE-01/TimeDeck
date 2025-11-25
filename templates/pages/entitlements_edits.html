@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , back_button %}
+{% block content %}
+
+<h1 class="text-2xl font-bold mb-4 no-print">⚖️ Edit Entitlements</h1>
+
+<div class="mb-4 space-y-1">
+  <span class="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-2 py-1 rounded">Off code</span>
+  <span class="text-sm text-gray-600">Time off work (missing in action)</span><br>
+
+  <span class="inline-block bg-green-100 text-green-800 text-sm font-semibold px-2 py-1 rounded">Working code</span>
+  <span class="text-sm text-gray-600">Time at work</span><br>
+
+  <span class="inline-block bg-yellow-100 text-yellow-800 text-sm font-semibold px-2 py-1 rounded">Min blind code</span>
+  <span class="text-sm text-gray-600">At work but doing something like training or meetings</span><br>
+
+  <span class="inline-block bg-red-100 text-red-800 text-sm font-semibold px-2 py-1 rounded">Must Draw Down</span>
+  <span class="text-sm text-gray-600">Must be drawn down by season end—can be used to finish early</span>
+</div>
+
+<br><hr>
+<form method="POST" action="/save-entitlements">
+        <table class="w-full border border-gray-300 rounded shadow-sm text-sm">
+        <thead class="bg-gray-100 text-left">
+            <tr>
+            <th class="px-3 py-2">Code</th>
+            <th class="px-3 py-2">Description</th>
+            <th class="px-3 py-2 text-center">Off</th>
+            <th class="px-3 py-2 text-center">Work</th>
+            <th class="px-3 py-2 text-center">Blind</th>
+            <th class="px-3 py-2 text-center">Drawdown</th>
+            <th class="px-3 py-2 text-center"> </th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for code, description in entitlements.items() %}
+                {% if code not in ['entitlement_unit', 'purpose', 'last_updated'] %}
+                    <tr class="border-t hover:bg-blue-50 transition" >
+                        <td>{{ code }}</td>
+                        <td><input type="text" name="description_{{ code }}" value="{{ description }}" /></td>
+
+                        <!-- Off Code radio button -->
+                        <td style="text-align: center;">
+                            <input type="radio" name="entitlement_{{ code }}" value="off_code"
+                                {% if code in off_codes %}checked{% endif %}>
+                        </td>
+                        
+                        <!-- Working Code radio button -->
+                        <td style="text-align: center;">
+                            <input type="radio" name="entitlement_{{ code }}" value="working_code"
+                                {% if code in working_codes %}checked{% endif %}>
+                        </td>
+
+                        <!-- Min Blind Code radio button -->
+                        <td style="text-align: center;">
+                            <input type="radio" name="entitlement_{{ code }}" value="min_blind_code"
+                                {% if code in min_blind_codes %}checked{% endif %}>
+                        </td>
+
+                        <!-- ✅ Must Draw Down checkbox -->
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="drawdown_{{ code }}" value="true"
+                                {% if code in must_drawdown_codes %}checked{% endif %}>
+                        </td>
+
+                        <!-- Delete Button for each row -->
+                        <td style="text-align: center;">
+                            <!-- Add Delete Button -->
+                            {% if code != "SHIFT" and me.job_title in ["Manager", "L8"] %}
+                                <button type="button" class="delete-btn" data-code="{{ code }}">🗑️</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+
+            <!-- Add new entitlement row -->
+            {% if me.job_title in ["Manager", "L8"] %}
+            <tr>
+                <td><input type="text" name="new_code" placeholder="e.g. NEW" /></td>
+                <td><input type="text" name="new_description" placeholder="New entitlement description" /></td>
+
+                <!-- New Off Code radio button -->
+                <td style="text-align: center;">
+                    <input type="radio" name="new_entitlement" value="off_code">
+                </td>
+                
+                <!-- New Working Code radio button -->
+                <td style="text-align: center;">
+                    <input type="radio" name="new_entitlement" value="working_code">
+                </td>
+
+                <!-- New Min Blind Code radio button -->
+                <td style="text-align: center;">
+                    <input type="radio" name="new_entitlement" value="min_blind_code">
+                </td>
+                <!-- ✅ New drawdown checkbox -->
+                <td style="text-align: center;"><input type="checkbox" name="new_drawdown" value="true"></td>
+
+                <td></td> <!-- Empty for the new row -->
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <br />
+    {% if me.job_title in ["Manager", "L8"] %}
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+  💾 Save Changes
+    </button>
+    {% endif %}
+</br></br>
+<p> This will update ALL employee entitlements and set the logic for ALL users <i>including new ones</i> ({{empcount}}) .</p>
+</form>
+  <br>
+  <br>
+  <div class="flex justify-center ">
+    <a href="/jobtitles" class="bg-blue-500 text-white px-4 py-2 rounded" >Job Titles / Departments</a>&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="/shifts" class="bg-blue-500 text-white px-4 py-2 rounded">Edit Shifts</a>
+</div>
+<script>
+    // Add event listener to each delete button
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const code = this.getAttribute('data-code');  // Get the code from data-code attribute
+            const confirmDelete = confirm(`Are you sure you want to delete the entitlement with code: ${code}?`);
+            if (confirmDelete) {
+                // Create a hidden input to submit the deleted code
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'deleted_codes'; // Add a name for the deleted codes
+                input.value = code; // Set the value to the code to be deleted
+                document.querySelector('form').appendChild(input);
+
+                // Submit the form to save the changes (delete action)
+                document.querySelector('form').submit();
+            }
+        });
+    });
+</script>
+{{ back_button() }}
+
+{% endblock %}

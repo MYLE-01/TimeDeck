@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , format_phone_number, back_button , print_this %}
+{% block content %}
+<style>
+  body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+</style>
+<h2 class="text-2xl font-bold mb-6 text-gray-800">PSL Pattern Distribution</h2>
+{{ back_button(label="Someone Phone in Sick", href="/report-sick") }}
+<form id="heatmapForm" class="mb-8 flex flex-wrap items-center gap-6 bg-white p-4 rounded shadow-md">
+  <div class="flex flex-col">
+    <label for="dept" class="font-semibold text-sm mb-1 text-gray-700">Department</label>
+    <select name="dept" id="dept" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <option value="">All</option>
+      {% for dept in all_departments %}
+        <option value="{{ dept }}" {% if selected_dept == dept %}selected{% endif %}>{{ dept }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="flex flex-col">
+    <label for="shift" class="font-semibold text-sm mb-1 text-gray-700">Shift</label>
+    <select name="shift" id="shift" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <option value="">All</option>
+      {% for s in all_shifts %}
+        <option value="{{ s }}" {% if selected_shift == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="flex flex-col">
+    <label for="emp" class="font-semibold text-sm mb-1 text-gray-700">Employee</label>
+    <select name="emp" id="emp" class="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <option value="">All</option>
+      {% for e in all_emps %}
+        <option value="{{ e.emp_id }}" {% if selected_emp == e.emp_id %}selected{% endif %}>{{ e.name }} ({{ e.emp_id }})</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<div class="mb-6 flex gap-4">
+  <button type="button" onclick="switchView('weekday')" class="no-print px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded shadow transition">Weekday View</button>
+  <button type="button" onclick="switchView('cycle')" class="no-print px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded shadow transition">Cycle View</button>
+  {{back_button(href="/psl_coverage", label = "PSL Coverage")}} {{ print_this() }}
+</div>
+
+<div class="bg-white p-4 rounded shadow-md">
+  <canvas id="barChart" width="800" height="500"></canvas>
+</div>
+
+<div id="anomalyPanel" class="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded shadow text-sm text-gray-800">
+  <strong class="block mb-2 text-yellow-800">Pulse Check:</strong>
+  <ul id="anomalyList" class="list-disc ml-6 space-y-1"></ul>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let weekdayData = {{ heatmap_weekday | tojson }};
+  let cycleData = {{ heatmap_cycle | tojson }};
+  let labelsWeekday = {{ labels_weekday | tojson }};
+  let labelsCycle = {{ labels_cycle | tojson }};
+  let anomaliesWeekday = {{ anomalies_weekday | tojson }};
+  let anomaliesCycle = {{ anomalies_cycle | tojson }};
+
+  let currentView = "weekday";
+  let barChart;
+
+  function renderBar(labels, data) {
+    const colors = [
+      "rgba(255, 99, 132, 0.6)",
+      "rgba(54, 162, 235, 0.6)",
+      "rgba(255, 206, 86, 0.6)",
+      "rgba(75, 192, 192, 0.6)"
+    ];
+
+    const datasets = Object.keys(data).map((key, i) => ({
+      label: key,
+      data: data[key],
+      backgroundColor: colors[i % colors.length],
+      stack: "stack1"
+    }));
+
+    if (barChart) barChart.destroy();
+    barChart = new Chart(document.getElementById("barChart"), {
+      type: "bar",
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: "PSL Pattern Distribution",
+            font: { size: 18 }
+          },
+          legend: {
+            labels: { font: { size: 12 } }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { font: { size: 12 } }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: { stepSize: 1 }
+          }
+        }
+      }
+    });
+  }
+
+  function updateAnomalyPanel(anomalies) {
+    const list = document.getElementById("anomalyList");
+    list.innerHTML = "";
+    if (anomalies.length === 0) {
+      list.innerHTML = "<li>No anomalies detected 🎉</li>";
+    } else {
+      anomalies.forEach(msg => {
+        const li = document.createElement("li");
+        li.textContent = msg;
+        list.appendChild(li);
+      });
+    }
+  }
+
+  function switchView(view) {
+    currentView = view;
+    if (view === "weekday") {
+      renderBar(labelsWeekday, weekdayData);
+      updateAnomalyPanel(anomaliesWeekday);
+    } else {
+      renderBar(labelsCycle, cycleData);
+      updateAnomalyPanel(anomaliesCycle);
+    }
+  }
+
+  switchView("weekday");
+
+  document.querySelector("#heatmapForm").addEventListener("change", async () => {
+    const params = new URLSearchParams(new FormData(document.querySelector("#heatmapForm")));
+    params.append("json", "true");
+
+    const res = await fetch("/heatmap?" + params.toString());
+    const data = await res.json();
+
+    weekdayData = data.heatmap_weekday;
+    cycleData = data.heatmap_cycle;
+    labelsWeekday = data.labels_weekday;
+    labelsCycle = data.labels_cycle;
+    anomaliesWeekday = data.anomalies_weekday;
+    anomaliesCycle = data.anomalies_cycle;
+
+    if (currentView === "weekday") {
+      renderBar(labelsWeekday, weekdayData);
+      updateAnomalyPanel(anomaliesWeekday);
+    } else {
+      renderBar(labelsCycle, cycleData);
+      updateAnomalyPanel(anomaliesCycle);
+    }
+  });
+</script>
+
+<div class="mt-6">
+  {{ back_button() }}
+</div>
+
+{% endblock %}

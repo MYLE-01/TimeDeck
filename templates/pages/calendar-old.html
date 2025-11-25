@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-4">
+
+  <!-- Filters row -->
+  <div class="flex flex-wrap items-center gap-2 my-2">
+
+    <!-- Shift -->
+    <select id="shiftSelect" class="border p-2 rounded">
+      <option value="" selected>Select Shift</option>
+      {% for s in shifts %}
+        <option value="{{ s.name }}">{{ s.name }}</option>
+      {% endfor %}
+    </select>
+
+    <!-- Employee -->
+    <select id="employeeSelect" class="border p-2 rounded">
+      <option value="">Select Employee</option>
+      {% for emp_id, emp in employees.items() %}
+        <option value="{{ emp_id }}">{{ emp.name }}</option>
+      {% endfor %}
+    </select>
+
+    <!-- Month -->
+    <div class="flex items-center gap-2">
+      <button id="prevMonth" class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">&lt;</button>
+
+      <select id="monthSelect" class="border p-2 rounded">
+        {% set months = ["January","February","March","April","May","June","July","August","September","October","November","December"] %}
+        {% for i in range(12) %}
+          <option value="{{ i+1 }}" {% if (i+1) == current_month %}selected{% endif %}>{{ months[i] }}</option>
+        {% endfor %}
+      </select>
+
+      <button id="nextMonth" class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">&gt;</button>
+
+      <select id="yearSelect" class="border p-2 rounded">
+        {% for y in range(current_year-1, current_year+2) %}
+          <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+  </div>
+</div>
+
+
+  <!-- Calendar grid -->
+  <div class="grid grid-cols-7 gap-3 font-bold text-center mb-3">
+    <div>Sun</div>
+    <div>Mon</div>
+    <div>Tue</div>
+    <div>Wed</div>
+    <div>Thu</div>
+    <div>Fri</div>
+    <div>Sat</div>
+  </div>
+  <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
+
+  <!-- Holidays -->
+  <div id="ShowHolidays" class="mt-4"></div>
+
+</div>
+<script>
+document.getElementById("prevMonth").addEventListener("click", () => {
+    let monthSelect = document.getElementById("monthSelect");
+    let yearSelect = document.getElementById("yearSelect");
+    let month = parseInt(monthSelect.value);
+    let year = parseInt(yearSelect.value);
+
+    month -= 1;
+    if (month < 1) {
+        month = 12;
+        year -= 1;
+    }
+
+    monthSelect.value = month;
+    yearSelect.value = year;
+    loadCalendar(); // update the calendar
+});
+
+document.getElementById("nextMonth").addEventListener("click", () => {
+    let monthSelect = document.getElementById("monthSelect");
+    let yearSelect = document.getElementById("yearSelect");
+    let month = parseInt(monthSelect.value);
+    let year = parseInt(yearSelect.value);
+
+    month += 1;
+    if (month > 12) {
+        month = 1;
+        year += 1;
+    }
+
+    monthSelect.value = month;
+    yearSelect.value = year;
+    loadCalendar(); // update the calendar
+});
+
+</script>
+
+
+
+<script src="static/scripts/js_maths.js?v={{ now }}"></script>
+<script src="static/scripts/edit_hours_popup.js?v={{ now }}"></script>
+<script src="static/scripts/calendar.js?v={{ now }}"></script>
+{% endblock %}
+

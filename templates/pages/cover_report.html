@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs, format_phone_number, back_button %}
+{% block content %}
+
+<div class="p-6">
+  <h2 class="text-2xl font-bold mb-4">Coverage Report</h2>
+  <!-- Filters -->
+  <div class="flex gap-4 mb-6">
+    <div>
+      <label for="monthFilter" class="block font-semibold">Month:</label>
+      <select id="monthFilter" class="border rounded px-2 py-1">
+        <option value="">All Months</option>
+        {% for m in months %}
+          <option value="{{ m }}">{{ m }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="yearFilter" class="block font-semibold">Year:</label>
+      <select id="yearFilter" class="border rounded px-2 py-1">
+        <option value="">All Years</option>
+        {% for y in years %}
+          <option value="{{ y }}">{{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="deptFilter" class="block font-semibold">Department:</label>
+      <select id="deptFilter" class="border rounded px-2 py-1">
+        <option value="">All Departments</option>
+        {% for d in departments %}
+          <option value="{{ d }}">{{ d }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <!-- Report Table -->
+  <table class="table-auto border-collapse w-full text-sm">
+    <thead>
+      <tr class="bg-gray-200">
+        <th class="border px-2 py-1">Date</th>
+        <th class="border px-2 py-1">Shift</th>
+        <th class="border px-2 py-1">Department</th>
+        <th class="border px-2 py-1">On Duty</th>
+        <th class="border px-2 py-1">Off Duty</th>
+        <th class="border px-2 py-1">Expected</th>
+        <th class="border px-2 py-1">Actual</th>
+        <th class="border px-2 py-1">Missing</th>
+        <th class="border px-2 py-1">Extra</th>
+        <th class="border px-2 py-1">Coverage %</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for date, shifts in report.items() %}
+        {% for shift, shift_data in (shifts|dictsort) %}
+          {% for dept, rec in (shift_data.departments|dictsort) %}
+            <tr class="border-b hover:bg-gray-50 dept-row"
+                data-key="{{ date }}|{{ shift }}"
+                data-date="{{ date }}"
+                data-dept="{{ dept }}">
+              <td class="border px-2 py-1">{{ date }}</td>
+              <td class="border px-2 py-1">
+                {{ shift }}
+                {% if shift_data.shift_type %}<span class="text-xs text-gray-500">({{ shift_data.shift_type }})</span>{% endif %}
+              </td>
+              <td class="border px-2 py-1">{{ dept }}</td>
+              <td class="border px-2 py-1">
+                {% for name in rec.on %}
+                  <div>{{ name }}</div>
+                {% endfor %}
+              </td>
+              <td class="border px-2 py-1">
+                {% for name in rec.off %}
+                  <div>{{ name }}</div>
+                {% endfor %}
+              </td>
+              <td class="border px-2 py-1 text-center">{{ rec.expected }}</td>
+              <td class="border px-2 py-1 text-center">{{ rec.actual }}</td>
+              <td class="border px-2 py-1 text-center">{{ rec.missing }}</td>
+              <td class="border px-2 py-1 text-center">{{ rec.extra }}</td>
+              <td class="border px-2 py-1 text-center">{{ rec.coverage }}%</td>
+            </tr>
+          {% endfor %}
+          <!-- Totals row per shift/date -->
+          <tr class="bg-gray-100 font-semibold totals-row"
+              data-key="{{ date }}|{{ shift }}"
+              data-date="{{ date }}">
+            <td class="border px-2 py-1">{{ date }}</td>
+            <td class="border px-2 py-1">{{ shift }} Totals</td>
+            <td class="border px-2 py-1 text-right">All</td>
+            <td class="border px-2 py-1 text-center" colspan="2"></td>
+            <td class="border px-2 py-1 text-center">{{ shift_data.totals.expected }}</td>
+            <td class="border px-2 py-1 text-center">{{ shift_data.totals.actual }}</td>
+            <td class="border px-2 py-1 text-center">{{ shift_data.totals.missing }}</td>
+            <td class="border px-2 py-1 text-center">{{ shift_data.totals.extra }}</td>
+            <td class="border px-2 py-1 text-center">{{ shift_data.totals.coverage }}%</td>
+          </tr>
+        {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ back_button() }}
+<!-- JS for filtering (keeps totals visible when any dept row for same date+shift is visible) -->
+<script>
+(function () {
+  const monthSelect = document.getElementById('monthFilter');
+  const yearSelect = document.getElementById('yearFilter');
+  const deptSelect = document.getElementById('deptFilter');
+
+  const monthNames = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
+
+  function applyFilter() {
+    const month = monthSelect.value;
+    const year = yearSelect.value;
+    const dept = deptSelect.value;
+
+    const visibleKeys = new Set();
+
+    // Show/hide department rows and collect keys for visible ones
+    document.querySelectorAll('tr.dept-row').forEach(row => {
+      const rowDate = row.dataset.date;    // YYYY-MM-DD
+      const rowDept = row.dataset.dept;
+      const parts = rowDate.split('-');    // [YYYY, MM, DD]
+      const rowYear = parts[0];
+      const rowMonth = monthNames[parseInt(parts[1], 10) - 1];
+
+      let show = true;
+      if (month && rowMonth !== month) show = false;
+      if (year && rowYear !== year) show = false;
+      if (dept && rowDept !== dept) show = false;
+
+      row.style.display = show ? '' : 'none';
+      if (show) visibleKeys.add(row.dataset.key);
+    });
+
+    // Totals rows: show if any dept row for same date|shift is visible
+    document.querySelectorAll('tr.totals-row').forEach(row => {
+      const key = row.dataset.key;
+      row.style.display = visibleKeys.has(key) ? '' : 'none';
+    });
+  }
+
+  [monthSelect, yearSelect, deptSelect].forEach(el => el.addEventListener('change', applyFilter));
+  // Run once on load to apply any default selections
+  applyFilter();
+})();
+</script>
+
+
+
+{% endblock %}

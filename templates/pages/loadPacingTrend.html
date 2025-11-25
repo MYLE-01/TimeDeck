@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , format_phone_number, back_button %}
+{% block content %}
+<div class="max-w-3xl mx-auto mt-6">
+  <h2 class="text-xl font-semibold mb-4">Monthly Leave Pacing Trend</h2>
+  <div id="trendContainer" class="space-y-2"></div>
+</div>
+
+<script>
+const season_mins = Number({{ season_mins | default(720) }}) || 720;
+</script>
+
+<script>
+async function loadPacingTrend(empId) {
+  try {
+    const res = await fetch(`/pacing-trend?emp_id=${empId}`);
+    const data = await res.json();
+
+    console.log("Pacing trend data:", data);
+
+    const trendContainer = document.getElementById("trendContainer");
+    trendContainer.innerHTML = "";
+
+    // 🧩 Add type_shift summary
+    const typeShift = data.type_shift || {};
+    const summaryCard = document.createElement("div");
+    summaryCard.className = "bg-gray-50 border rounded p-3 shadow-sm";
+
+    let shiftLines = Object.entries(typeShift).map(([code, mins]) => {
+      return `<div>${code}: ${Math.round(mins / season_mins)} days (${mins} mins)</div>`;
+    }).join("");
+
+    summaryCard.innerHTML = `
+      <div class="text-sm text-gray-700">
+        <strong>Leave Type Summary:</strong><br>
+        ${shiftLines}
+      </div>
+    `;
+    trendContainer.appendChild(summaryCard);
+
+    // 📅 Monthly pacing cards
+    const trend = data.monthly_pacing || {};
+    Object.entries(trend).forEach(([month, info]) => {
+      const card = document.createElement("div");
+      card.className = "bg-white border rounded p-3 shadow-sm";
+
+      const statusColor = {
+        "✅ Ahead": "text-green-600",
+        "⚠️ Close": "text-yellow-600",
+        "❌ Overdrawn": "text-red-600"
+      }[info.status] || "text-gray-600";
+
+      card.innerHTML = `
+        <div class="flex justify-between items-center">
+          <span class="font-medium">${month}</span>
+          <span class="${statusColor} font-bold">${info.status}</span>
+        </div>
+        <div class="text-sm text-gray-700 mt-1">
+          Used: ${Math.round(info.used / season_mins)} days / Entitled: ${Math.round(info.entitled / season_mins)} days
+        </div>
+      `;
+      trendContainer.appendChild(card);
+    });
+  } catch (err) {
+    console.error("Trend load failed", err);
+    document.getElementById("trendContainer").innerHTML = `
+      <p class="text-sm text-red-500">Failed to load pacing trend.</p>
+    `;
+  }
+}
+
+// Replace with actual empId from context
+loadPacingTrend("{{ emp_id }}");
+</script>
+{% endblock %}

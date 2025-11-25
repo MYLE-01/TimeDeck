@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fuzzy Lookup</title>
+  https://cdn.jsdelivr.net/npm/fuse.js@6.6.2</script>
+  <style>
+    #resultsPopup {
+      display: none;
+      position: absolute;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 10px;
+      z-index: 100;
+    }
+    .result-btn {
+      display: block;
+      margin: 5px 0;
+      padding: 5px;
+      background: #e0e0ff;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Search Name</h2>
+  <input type="text" id="searchInput" placeholder="Enter name">
+  <button onclick="searchName()">Search</button>
+
+  <div id="resultsPopup"></div>
+
+  <script>
+    const empNumbers = [
+      { name: "MAURICE CHISNALL", empId: "503825" },
+      { name: "MAXWELL ESPINER", empId: "367735" },
+      { name: "PETER NGAIA", empId: "372632" }
+    ];
+
+    const loginInfo = [
+      { name: "STEVE MCKILLEN", username: "mckillen" },
+      { name: "DAVID EDGCOMBE", username: "edgcomb1" },
+      { name: "JASON LOVE", username: "lovejaso" },
+      { name: "MICHAEL KEMPTON", username: "kemptonm" }
+    ];
+
+    const empFuse = new Fuse(empNumbers, { keys: ['name'], threshold: 0.3 });
+    const loginFuse = new Fuse(loginInfo, { keys: ['name'], threshold: 0.3 });
+
+    function searchName() {
+      const input = document.getElementById("searchInput").value.toUpperCase();
+      const empMatches = empFuse.search(input);
+      const loginMatches = loginFuse.search(input);
+
+      const popup = document.getElementById("resultsPopup");
+      popup.innerHTML = "";
+      popup.style.display = "block";
+
+      if (empMatches.length > 0) {
+        popup.innerHTML += "<strong>Employee Numbers:</strong><br>";
+        empMatches.forEach(match => {
+          const btn = document.createElement("button");
+          btn.className = "result-btn";
+          btn.textContent = `${match.item.name} → ${match.item.empId}`;
+          btn.onclick = () => alert(`Selected EmpID: ${match.item.empId}`);
+          popup.appendChild(btn);
+        });
+      }
+
+      if (loginMatches.length > 0) {
+        popup.innerHTML += "<strong>Usernames:</strong><br>";
+        loginMatches.forEach(match => {
+          const btn = document.createElement("button");
+          btn.className = "result-btn";
+          btn.textContent = `${match.item.name} → ${match.item.username}`;
+          btn.onclick = () => alert(`Selected Username: ${match.item.username}`);
+          popup.appendChild(btn);
+        });
+      }
+
+      if (empMatches.length === 0 && loginMatches.length === 0) {
+        popup.innerHTML = "No matches found.";
+      }
+    }
+  </script>
+</body>
+</html>

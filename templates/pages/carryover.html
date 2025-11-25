@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs, format_phone_number,back_button %}
+{% block content %}
+<style>
+  body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+/* Print: hide everything by default, show only the selected table (next sibling of .carryover-block.printable) */
+@media print {
+/* hide all header bars and all tables by default */
+.carryover-block { display: none !important; }
+/* the table containers are the immediate sibling div after each header; hide them by default too */
+.carryover-block + div { display: none !important; }
+
+/* show only the table that follows the printable header */
+.carryover-block.printable + div { display: block !important; }
+
+/* hide interactive controls */
+button, .toggle-btn, .no-print { display: none !important; }
+
+/* print-only content inside the table */
+.print-only { display: block !important; font-weight: bold; font-size: 1rem; margin-bottom: 0.5rem; }
+
+/* pin header (site header) to top for print and make space */
+header {
+position: fixed !important;
+top: 0;
+left: 0;
+right: 0;
+width: 100%;
+margin: 0;
+z-index: 50;
+background: #1e40af !important;
+box-shadow: none !important;
+-webkit-print-color-adjust: exact;
+print-color-adjust: exact;
+}
+body { padding-top: 4rem; }
+}
+
+@media print {
+.no-print { display: none !important; }
+}
+
+</style>
+
+<h1 class="text-2xl font-bold mb-4 no-print">⚖️ Carryover Summary</h1>
+<div class="text-sm text-gray-600 italic mb-2 no-print">
+  Viewing: <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+    {{ Filter_by }}
+  </span>
+</div>
+
+
+<hr class="border-blue-300 mb-4 no-print">
+
+<hr class="no-print">
+<div>
+  {% set reporting_managers = reporting_managers | reject('equalto', 'L7') | list %}
+  {% set reports = report_map.get(me.id, []) %}
+  {% for emp_id, data in summary.items() %}
+    {% set is_manager = me.job_title in reporting_managers or emp_id in reports%}
+    {% if (is_manager or emp_id == me.id)  %}
+      {% set CanClick = "toggleTable('" ~ emp_id ~ "')" %}
+      {% set class_class ="carryover-block bg-gradient-to-r from-blue-700 to-blue-500 text-white px-6 py-3 shadow-lg rounded-xl transition-all duration-300"%}
+    {% else %}
+      {% set CanClick = "" %}
+      {% set class_class ="carryover-block bg-gradient-to-r from-blue-400 to-blue-400 text-white px-6 py-3 shadow-lg rounded-xl transition-all duration-300"%}
+    {% endif %}
+
+
+
+    <div id="block-{{ emp_id }}" class="{{class_class}}">
+      <button
+        type="button"
+        id="toggle-{{ emp_id }}"
+        aria-controls="table-{{ emp_id }}"
+        aria-expanded="false"
+        class="toggle-btn w-full flex items-center text-left font-semibold bg-transparent border-0 p-0 cursor-pointer print:hidden"
+        onclick="{{CanClick}}"
+      >
+        <!-- Left: Name & Phone (flex item that can grow) -->
+        <div class="flex-1">
+          {% if data.is_temp %}
+            <span class="badge badge-hourly">🕒</span>
+          {% endif %}
+
+          {{ data.employee.name }} - {{ format_phone_number(data.employee.contact_number) }} : {{ data.employee.shift }}
+        </div>
+
+        <!-- Arrow icon (keeps near the right, before the Done badge) -->
+        <svg id="icon-{{ emp_id }}" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+       
+        <!-- Done badge: placed last with ml-auto so it aligns to the far right -->
+        <div class="ml-auto bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-semibold shadow">
+          Done: {{ min_to_hrs(data.total_used_mins) }}
+        </div>
+      </button>
+    </div>
+    <br class="no-print">
+    <div id="table-{{ emp_id }}" class="hidden mt-4 bg-white text-black rounded p-4 shadow-inner">
+      <div class="hidden print:block font-bold text-base mb-2">
+        {{ data.employee.name }}
+        <div id="print-date-{{ emp_id }}"></div>
+      </div>
+
+      <p class="mb-2">
+    
+     <div>
+      {% if data.is_temp %}
+        <span class="badge badge-hourly no-print">🕒 Temporary / Casual Employee</span>
+      {% else %}
+      <a class= "no-print" href = "/config_person/{{data.employee.id}}#EntitlementID">🛠️ Edit there Entitlement</a>
+      {% endif %}
+    </div>
+        <span class="text-green-700 font-semibold">✅ Done:</span> {{ min_to_hrs(data.total_used_mins) }} hrs |
+        <span class="text-blue-700 font-semibold">📋 To Do:</span> {{ min_to_hrs(data.total_minutes_todo) }} hrs |
+        <span class="text-orange-600 font-semibold">⏳ Remaining:</span> {{ min_to_hrs(data.total_minutes_todo - data.total_used_mins) }}
+      </p>
+
+      <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden relative mb-4">
+        <div
+          class="bg-green-500 h-full relative"
+          {% set progress = (data.total_used_mins / data.total_minutes_todo * 100) if data.total_minutes_todo else 0 %}
+          style="width: {{ progress | round(2) }}%;"
+        >
+          <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+            {{ progress | round(2) }}%
+          </span>
+        </div>
+      </div>
+
+      <table class="w-full border-collapse mt-4">
+        <thead>
+          <tr>
+            <th class="border border-gray-300 px-2 py-1 bg-blue-400 text-white text-center">Code</th>
+            <th class="border border-gray-300 px-2 py-1 bg-blue-400 text-white text-center">Start Season</th>
+            <th class="border border-gray-300 px-2 py-1 bg-blue-400 text-white text-center">Used / Done</th>
+            <th class="border border-gray-300 px-2 py-1 bg-blue-400 text-white text-center">#</th>
+            <th class="border border-gray-300 px-2 py-1 bg-blue-400 text-white text-center">Balance</th>
+            <th class="border border-gray-300 px-2 py-1 bg-blue-400 text-white text-center">Washup</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for code, start in data.carryover_start.items() %}
+            {% if code == "SHIFT" %}
+              {% set balance = data.carryover_balance.get(code,0) - data.carryover_balance.get("SHIFT_COVER",0) %}
+            {% else %}
+              {% set balance = data.carryover_balance.get(code,0) %}
+            {% endif %}
+            {% set used = data.carryover_used.get(code,0) %}
+            {% set wash = data.washup.get(code,0) %}
+
+            {% if code_descriptions[code] is defined %}
+              {% set description = code_descriptions[code] %}
+            {% else %}
+              {% set description = "" %}
+            {% endif %}
+
+
+            <tr title ="{{ description }}" class="{% if balance < 0 %}bg-red-300{% elif balance == 0 %}bg-gray-200{% else %}bg-green-100{% endif %}">
+              <td  class="border border-gray-300 px-2 py-1 text-right">{{ code }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">{{ min_to_hrs(start) }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">{{ min_to_hrs(used) }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">{{ data.type_counts.get(code,0) }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">{{ min_to_hrs(balance) }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">{{ min_to_hrs(wash) }}</td>
+            </tr>
+          {% endfor %}
+
+
+          <tr>
+            <td colspan="5" class="border border-gray-300 px-2 py-1 font-semibold text-center">
+              Total Washup
+            </td>
+            <td class="border border-gray-300 px-2 py-1 text-right">
+              {{ min_to_hrs(data.total_used_mins) }}
+            </td>
+          </tr>
+
+          {% set effort = data.extra_effort_percent %}
+          {% if effort < 5 %}
+            {% set effort_class = "bg-gray-100" %}
+          {% elif effort < 10 %}
+            {% set effort_class = "bg-green-100" %}
+          {% elif effort < 15 %}
+            {% set effort_class = "bg-yellow-100" %}
+          {% else %}
+            {% set effort_class = "bg-red-200" %}
+          {% endif %}
+
+          <tr class="{{ effort_class }}">
+            <td colspan="6" class="border border-gray-300 px-2 py-1 font-semibold text-center"
+                title="Includes call backs and cover shifts relative to core SHIFT count">
+              Extra Effort: {{ effort }}%
+              {% if effort >= 10 %} 💪 {% endif %}
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <div class="flex justify-center mt-4">
+        <button
+          type="button"
+          onclick="printBlock('{{ emp_id }}')"
+          class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg shadow transition"
+        >
+          🖨️ Print This Section
+        </button>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+<div class="flex justify-center mt-4">
+<a href="/cover_report" class=" {{ok[2]}} no-print inline-block mt-6 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-lg shadow transition">
+  Cover by Calendar / Summary Report
+</a>
+
+
+<br>
+<a href="/entitlement-summary" class=" {{ok[2]}} no-print inline-block mt-6 ml-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-lg shadow transition">
+  Entitlement Summary
+</a>
+<a href="/progress-summary" class=" {{ok[2]}} no-print inline-block mt-6 ml-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-lg shadow transition">
+  Progress Summary
+</a>
+</div>
+
+{{ back_button() }}
+<script>
+function printBlock(empId) {
+  // Remove printable class from all
+  document.querySelectorAll('.carryover-block').forEach(b => b.classList.remove('printable'));
+
+  // Add to the selected block
+  document.getElementById(`block-${empId}`).classList.add('printable');
+
+  // Trigger print
+  window.print();
+}
+
+function toggleTable(empId) {
+  const table = document.getElementById(`table-${empId}`);
+  const block = document.getElementById(`block-${empId}`);
+  const icon = document.getElementById(`icon-${empId}`); // <-- fixed: use empId
+  const toggleBtn = document.getElementById(`toggle-${empId}`);
+  const isOpen = !table.classList.contains('hidden');
+
+  // Close all tables and reset icons/ARIA
+  document.querySelectorAll('[id^="table-"]').forEach(t => t.classList.add('hidden'));
+  document.querySelectorAll('[id^="icon-"]').forEach(i => i.classList.remove('rotate-180'));
+  document.querySelectorAll('[id^="toggle-"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  document.querySelectorAll('.carryover-block').forEach(b => b.classList.remove('printable'));
+
+  if (!isOpen) {
+    table.classList.remove('hidden');
+    if (icon) icon.classList.add('rotate-180');
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+    block.classList.add('printable'); // Mark this block printable
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toLocaleDateString('en-NZ', { day:'numeric', month:'long', year:'numeric' });
+  document.querySelectorAll('[id^="print-date-"]').forEach(el => { el.textContent = `As of ${today}`; });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,130 @@
+{
+  "emp_id": "541896",
+  "emp_name": "Shannon Whi",
+  "report_to": "0",
+  "contact_number": "",
+  "job_title": "L7",
+  "_notes": "Base config for each EMP. Updated annually with rollover leave.",
+  "default_entitlement_mins": 139500,
+  "public_holidays": "Taranaki",
+  "shift_name": "B Shift",
+  "reporting_managers": "L7 L8",
+  "view_range_days": 14,
+  "callback_trigger_hours": 48,
+  "logic_flags": {
+    "block_last_n_for_next_d": true,
+    "prioritize_low_hours_for_cover": true,
+    "allow_cover_on_day_2": true,
+    "allow_self_decline": true
+  },
+  "season": {
+    "start": "20-07-2025",
+    "ends": "25-07-2026",
+    "mins": 720,
+    "winter_maths": "on",
+    "winter_pattern": "4x3x10",
+    "winter_sequence": "DDDD***",
+    "winter_mins": 600,
+    "winter_start": "01-06-2026",
+    "winter_ends": "09-07-2026"
+  },
+  "annual_entitlements_carryover": {
+    "SHIFT": 0,
+    "CB": 0,
+    "PNW": 0,
+    "LWP": 0,
+    "PAL": 0,
+    "ADT": 0,
+    "LSL": 0,
+    "PSL": 0,
+    "USL": 0,
+    "ACC": 0,
+    "BVT": 0,
+    "PPL": 0,
+    "TRE": 0,
+    "CASH": 0,
+    "_notes": "This is our start point rem in MINS but input could be in mins"
+  },
+  "annual_entitlements_used": {
+    "SHIFT": 0,
+    "CB": 0,
+    "PNW": 0,
+    "LWP": 0,
+    "PAL": 0,
+    "ADT": 0,
+    "LSL": 0,
+    "PSL": 0,
+    "USL": 0,
+    "ACC": 0,
+    "BVT": 0,
+    "PPL": 0,
+    "TRE": 0,
+    "CASH": 0,
+    "_notes": "this is what been used this season"
+  },
+  "misc_adjustments": {
+    "_notes": "Mite a need some brain here make relay smart",
+    "Covers": 0,
+    "Meetings": 0,
+    "DW": 0,
+    "SN": 0
+  },
+  "titles": {
+    "_notes": "this feed the job title dropdown",
+    "Manager": "Manager",
+    "L8": "Level 8",
+    "L7": "Level 7",
+    "2IC": "Second in Charge",
+    "L6": "Level 6",
+    "5A": "Level 5A",
+    "5B": "Level 5B",
+    "L4": "Level 4"
+  },
+  "notes": {
+    "entitlement_unit": "Stored internally as minutes, UI displays as hours. and Its meaning.",
+    "last_updated": "2025-11-24",
+    "purpose": "Used to power drawdown logic and modal grid.",
+    "SHIFT": "Working Shift",
+    "PNW": "Paid Not Work",
+    "CB": "Call Back",
+    "LWP": "Leave Without Pay",
+    "PAL": "Paid Annual Leave",
+    "ADT": "Annual Day Off",
+    "LSL": "Long Service",
+    "PSL": "Paid Sick Leave",
+    "USL": "Unpaid Sick Leave",
+    "ACC": "Accident Leave",
+    "BVT": "Bereavement Leave",
+    "PPL": "Parental Leave",
+    "TRE": "Training Leave",
+    "CASH": "Payout, not time off"
+  },
+  "off_codes": [
+    "ACC",
+    "ADT",
+    "BVT",
+    "LSL",
+    "LWP",
+    "PAL",
+    "PNW",
+    "PPL",
+    "PSL",
+    "USL"
+  ],
+  "working_codes": [
+    "CASH",
+    "CB",
+    "SHIFT"
+  ],
+  "min_blind_codes": [
+    "TRE"
+  ],
+  "last_updated": "2025-11-24T23:57:15.415708",
+  "your_windows_login": "",
+  "departments": "DPP2",
+  "draw_down_codes": [
+    "ADT",
+    "LSL",
+    "PAL"
+  ]
+}

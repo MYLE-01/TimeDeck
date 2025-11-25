@@ -1,0 +1,51 @@
+[
+  {
+    "ID": "808ec11e-45a7-4f5d-9815-3222cce11d69",
+    "date": "2025-11-19",
+    "emp_id": "123456",
+    "shift_name": "A Shift",
+    "shift_type": "Day",
+    "type_shift": "PSL",
+    "notes": "phone in sick",
+    "cover_id": null,
+    "manager_id": "541895",
+    "decision_timestamp": "2025-11-20T07:37:18.625656",
+    "status": "Approved",
+    "cover_by": [
+      541895
+    ],
+    "coverage_status": "covered"
+  },
+  {
+    "ID": "da55dc07-7b55-4b5e-aead-93cb8de1200a",
+    "date": "2025-11-19",
+    "emp_id": "123456",
+    "shift_name": "A Shift",
+    "shift_type": "Day",
+    "type_shift": "PSL",
+    "notes": "phone in sick",
+    "cover_id": null,
+    "manager_id": "541895",
+    "decision_timestamp": "2025-11-20T07:37:18.625656",
+    "status": "Approved",
+    "cover_by": [
+      541895
+    ],
+    "coverage_status": "covered"
+  },
+  {
+    "ID": "c19eb744-254e-4094-b4a1-e5110ff368f3",
+    "date": "2025-11-20",
+    "emp_id": "524164",
+    "shift_name": "D Shift",
+    "shift_type": "Night",
+    "type_shift": "BVT",
+    "notes": "phone in sick",
+    "cover_id": null,
+    "manager_id": "541895",
+    "decision_timestamp": "2025-11-20T07:42:01.790064",
+    "status": "Approved",
+    "cover_by": [],
+    "coverage_status": "covered"
+  }
+]

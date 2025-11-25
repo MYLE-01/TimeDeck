@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shift Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .shift-list { margin-top: 20px; }
+    .shift { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    form input, form select { margin: 5px 0; padding: 5px; width: 100%; }
+    form button { margin-top: 10px; padding: 10px; }
+  </style>
+</head>
+<body>
+
+  <h1>Shift Manager</h1>
+
+  <div id="shiftForm">
+    <h2>Add New Shift</h2>
+    <form id="addShiftForm">
+      <input type="text" id="name" placeholder="Shift Name" required>
+      <input type="date" id="first" required>
+      <input type="text" id="roster_pattern" placeholder="Roster Pattern (e.g. 4x4x12)" required>
+      <input type="text" id="shift_sequence" placeholder="Shift Sequence (e.g. DDNN****)" required>
+      <button type="submit">Add Shift</button>
+    </form>
+  </div>
+
+  <div class="shift-list" id="shiftList">
+    <h2>Existing Shifts</h2>
+  </div>
+
+  <script>
+    // Initial JSON data
+    const shiftData = {
+      "Shifts": [
+        { "name": "A Shift", "first": "14 July 2025", "roster_pattern": "4x4x12", "shift_sequence": "DDNN****" },
+        { "name": "B Shift", "first": "16 July 2025", "roster_pattern": "4x4x12", "shift_sequence": "DDNN****" },
+        { "name": "C Shift", "first": "18 July 2025", "roster_pattern": "4x4x12", "shift_sequence": "DDNN****" },
+        { "name": "D Shift", "first": "20 July 2025", "roster_pattern": "4x4x12", "shift_sequence": "DDNN****" },
+        { "name": "A Day", "first": "16 July 2025", "roster_pattern": "4x4x10", "shift_sequence": "DDDD****" },
+        { "name": "B Day", "first": "12 July 2025", "roster_pattern": "4x4x10", "shift_sequence": "DDDD****" },
+        { "name": "Mon-Fri", "first": "07 July 2025", "roster_pattern": "5x2x8", "shift_sequence": "DDDDD**" },
+        { "name": "A Shift Job Share", "first": "14 July 2025", "roster_pattern": "4x12x12", "shift_sequence": "DDNN************" }
+      ]
+    };
+
+    const shiftList = document.getElementById('shiftList');
+
+    function displayShifts() {
+      // Clear current list
+      shiftList.innerHTML = "<h2>Existing Shifts</h2>";
+      shiftData.Shifts.forEach((shift, index) => {
+        const div = document.createElement('div');
+        div.className = 'shift';
+        div.innerHTML = `
+          <strong>${shift.name}</strong><br>
+          First Day: ${shift.first}<br>
+          Roster Pattern: ${shift.roster_pattern}<br>
+          Sequence: ${shift.shift_sequence}
+        `;
+        shiftList.appendChild(div);
+      });
+    }
+
+    document.getElementById('addShiftForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const newShift = {
+        name: document.getElementById('name').value,
+        first: new Date(document.getElementById('first').value).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
+        roster_pattern: document.getElementById('roster_pattern').value,
+        shift_sequence: document.getElementById('shift_sequence').value
+      };
+
+      shiftData.Shifts.push(newShift);
+      displayShifts();
+
+      // Reset form
+      this.reset();
+    });
+
+    // Initial display
+    displayShifts();
+  </script>
+
+</body>
+</html>

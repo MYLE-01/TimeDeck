@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>B Shift Calendar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .month-section {
+      margin-bottom: 30px;
+    }
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 10px;
+      display: none; /* hidden by default */
+    }
+    .day-card {
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-left: 5px solid #ccc;
+      border-radius: 5px;
+    }
+    .day-card.day {
+      background-color: #fffbe6;
+      border-left-color: #f7c948;
+    }
+    .day-card.night {
+      background-color: #e6f0ff;
+      border-left-color: #3390ff;
+    }
+    .day-card h3 {
+      margin: 0;
+    }
+    .meta {
+      font-size: 0.9em;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>B Shift Schedule</h1>
+
+  <div id="calendar-container"></div>
+
+  <script>
+    const shiftData = [
+      { date: "2025-07-24", shift_type: "Day", day: "Thursday", mins: 720 },
+      { date: "2025-07-25", shift_type: "Day", day: "Friday", mins: 720 },
+      { date: "2025-07-26", shift_type: "Night", day: "Saturday", mins: 720 },
+      { date: "2025-07-27", shift_type: "Night", day: "Sunday", mins: 720 },
+      { date: "2025-08-01", shift_type: "Day", day: "Friday", mins: 738 },
+      { date: "2025-08-02", shift_type: "Day", day: "Saturday", mins: 720 },
+      { date: "2025-08-03", shift_type: "Night", day: "Sunday", mins: 720 },
+      { date: "2025-08-04", shift_type: "Night", day: "Monday", mins: 720 },
+      { date: "2025-08-09", shift_type: "Day", day: "Saturday", mins: 720 },
+      { date: "2025-08-10", shift_type: "Day", day: "Sunday", mins: 720 }
+    ];
+
+    // Group by month
+    const grouped = {};
+    shiftData.forEach(item => {
+      const date = new Date(item.date);
+      const monthKey = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      if (!grouped[monthKey]) grouped[monthKey] = [];
+      grouped[monthKey].push(item);
+    });
+
+    // Render calendar
+    const container = document.getElementById("calendar-container");
+
+    Object.entries(grouped).forEach(([month, entries], index) => {
+      const section = document.createElement("div");
+      section.className = "month-section";
+
+      const header = document.createElement("div");
+      header.className = "month-header";
+      header.innerHTML = `<span>${month}</span><span>▼</span>`;
+      header.onclick = () => {
+        calendar.style.display = calendar.style.display === "none" ? "grid" : "none";
+      };
+
+      const calendar = document.createElement("div");
+      calendar.className = "calendar";
+      if (index === 0) calendar.style.display = "grid"; // open first month by default
+
+      entries.forEach(shift => {
+        const card = document.createElement("div");
+        card.className = `day-card ${shift.shift_type.toLowerCase()}`;
+
+        const readableDate = new Date(shift.date).toLocaleDateString('default', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+
+        card.innerHTML = `
+          <h3>${readableDate}</h3>
+          <div class="meta">${shift.shift_type} Shift – ${shift.mins} mins</div>
+        `;
+
+        calendar.appendChild(card);
+      });
+
+      section.appendChild(header);
+      section.appendChild(calendar);
+      container.appendChild(section);
+    });
+  </script>
+
+</body>
+</html>

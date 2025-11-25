@@ -1,0 +1,535 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs, back_button %}
+{% block content %}
+
+<style>
+  .image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 2rem;
+  }
+
+  .image-grid img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border: 1px solid #ccc;
+    padding: 4px;
+    background: #fff;
+  }
+
+  body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+  h2 {
+    cursor: pointer;
+    margin-top: 20px;
+    background: #3b82f6;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: background 0.3s ease;
+  }
+  h2:hover {
+    background: #2563eb;
+  }
+  h2.active {
+    background: #1e40af; /* darker blue */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  }
+  
+  h2 {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 24px;
+    color: #1e40af;
+    margin-bottom: 10px;
+  }
+  ul {
+    padding-left: 20px;
+  }
+  li {
+    margin-bottom: 8px;
+  }
+
+  .page-break {
+    page-break-before: always;
+    margin-top: 5px;
+  }
+
+
+  @media print {
+    .print-hide, .no-print { display: none; }
+    .print-only { display: block; page-break-before: always; }
+    .page-break { page-break-before: always; }
+    h2 { color: #000; background: none; box-shadow: none; }
+    body { background: #fff; color: #000; }
+    figure:empty { display: none;  }
+  }
+
+
+
+  .section {
+    max-height: 0;
+    overflow: hidden;
+    background: #fff;
+    border-left: 4px solid #3498db;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    padding: 0 20px;
+    transition: max-height 0.6s ease; /* was 0.4s */
+
+  }
+  .section.open {
+    max-height: 600px; /* enough space to expand */
+    padding: 10px 20px;
+  }
+  ul { padding-left: 20px; }
+  code {
+    background: #ecf0f1;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+  .highlight { color: #e74c3c; font-weight: bold; }
+</style>
+
+<body>
+<button onclick="printAllSections()" 
+        class="print-hide text-white px-4 py-2 rounded shadow hover:bg-blue-700 mb-4">
+  🖨️ Print All Sections with TOC
+</button>
+
+<div class="cover-page print-only">
+  <h1>🧭 TimeDeck™ Help Guide</h1>
+  <p>Version 2025.11 • Last updated: 11 Nov 2025</p>
+  <p>Built by StePhan McKillen</p>
+  <p class="mt-6">This guide explains every feature of TimeDeck™, from shift logic to season rollovers. Each section starts on a new page for clarity and printing.</p>
+</div>
+
+
+{% set sections = [
+
+("🧱 Where to Start (Structure)", [
+  "<strong>Structure:</strong> This is the heart of the system — you can change values anytime.",
+  "CoverOver hours can be added at any time.",
+  "Use your Windows login name to view your data first for easier access.",
+  "<img src=\"/images/EMPProfile.JPG\" alt=\"Structure Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("🔄 Its Awareness", [
+  "Understands which shift patterns run on which days — including winter logic and custom sequences.",
+  "Knows which departments each employee can view, and shows only what’s relevant.",
+  "Tracks which shifts are available for cover, based on real-time rosters and entitlements.",
+  "Detects when someone phones in sick and shows who’s missing from the day’s coverage.",
+  "Suggests the best cover options based on shift compatibility, availability, and fairness.",
+  "Respects job titles and logic flags — so managers see more, and casuals see just enough.",
+  "Adapts to season changes automatically when triggered — no manual tweaks required.",
+  "<img src=\"/images/Shiftware.jpg\" alt=\"Shift Awareness Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">",
+  "<br>as each person looks at their own schedule. it will show them if cover is required. and tell them where they are in the cycle they are.",
+  "<img src=\"/images/requested.JPG\" alt=\"Shift Awareness Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+
+("🧮 Roster Calculations", [
+  "Roster calculations run in real time, tracking each shift from season start to end.",
+  "Hours, carryovers, and balances update automatically as you enter or modify shifts.",
+  "Changes instantly affect projected balances and cover suggestions.",
+  "<img src=\"/images/Whereyouare.JPG\" alt=\"Roster Calculations Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+(" 📅🔄 Finish date ",[
+  " This is work out by takeing you leave entitlements plus any carryover from last season plus any extra cover over hours you have added then minus any leave you have taken this season to give you the total hours you should have worked this season.",
+  " it then count backwards from the end of the season to work out when you should finish your shifts this season.",
+  " this date will change as you take more leave or add more cover over hours so keep an eye on it to make sure you are on track to finish when you want to. ",
+  "<img src=\"/images/Finishtime.JPG\" alt=\"Finish Date Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+  ]),
+
+("🔄 Shift Patterns", [
+  "Any shift pattern can be created to match your team's rhythm.",
+  "Each pattern must have a clear sequence and a known starting day.",
+  "<img src=\"/images/ShiftPatten.JPG\" alt=\"Shift Pattern Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">",
+  "The system uses this to map shifts to calendar days accurately.",
+  " Ensure patterns align with actual working schedules for best results.",
+  "you can invent any pattern you like as long as it has a clear sequence and a known starting day."
+
+]),
+
+
+(" 🧑‍🔧 Temp Staff", [
+  "Temporary staff can be added as needed.",
+  "They follow the same shift rules as regular staff.",
+  "They don’t need annual hours — that’s how the system knows they’re temp."
+]),
+
+("🧠 Data Accuracy (Garbage in, garbage out)", [
+  "Garbage in, garbage out — but the maths is solid.",
+  "Keep your shifts and hours updated for accurate results.",
+  "Use notes to clarify unusual entries.",
+  "Review discrepancies and correct errors promptly.",
+  "Keep employee configs up to date with any changes.",
+  "Its up to you to get the hours input right eg if you work 10 hrs day shift but only put in 8 hrs the system will think you only worked 8 hrs and your balance will be wrong.",
+]),
+("📅 Season’s Overview", [
+
+  "Define your season with start and end dates in each employee’s config.",
+  "The system uses these dates to calculate entitlements and pacing.",
+  "Adjust dates as needed to reflect actual working periods.",
+  "<img src=\"/images/Season.JPG\" alt=\"Season Overview Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">",
+  "Ensure season dates align with your organization’s calendar.",
+  "If rolling over to next season , update dates accordingly.",
+  "even if they are jumping shifts make sure season dates are correct",
+  "hopefully by the start of the next season I have the logic to auto update this."
+]),
+
+("📅 Calendar", [
+  "Select yourself or another user to view their calendar.",
+  "Shift types are color-coded: <span class='bg-yellow-200'>Day</span>, <span class='bg-blue-200'>Night</span>.",
+  "The summary shows season progress and projected balance.",
+  "<img src=\"/images/calendar.jpg\" alt=\"Calendar Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("📊 Carryover", [
+  "Shows your current balance as if today were the end of the season.",
+  "Useful for checking progress without waiting for month-end.",
+  "Lists who should be contacted to cover shifts based on pacing.",
+  "<img src=\"/images/Breakdownnew.JPG\" alt=\"Carryover Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+
+("🕒 Shifts", [
+  "<strong>Shift Types:</strong> <span class='bg-yellow-200'>Day</span>, <span class='bg-blue-200'>Night</span>, <span class='bg-white-200'>* = off</span>.",
+  "<strong>Sequence:</strong> <code>DDNN****</code> — the core of the system.",
+  "<strong>Editing:</strong> Double-click a calendar row to open the edit modal.",
+  "<strong>Extra Entry:</strong> Double-click to insert additional shifts. The system will auto-select based on maths.",
+  "<strong>Shorty:</strong> Enter <code>SHIFT</code> and add '<em>cover</em>' in Notes to create a tooltip.",
+  "<img src=\"/images/Shift.JPG\" alt=\"Shifts Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("⏱️ Hours / Time Inputs", [
+  "Accepted formats:",
+  "<ul><li>Decimal: <code>12.5</code> → 12 hours 30 mins</li><li>HH:MM: <code>12:30</code></li></ul>",
+  "<strong>+- 0:18 button:</strong> Right click Adds 18 mins to the last row in modals. Left click minus 18 mins to the last row in modals. shift+left click adds 1 hr to the last row in modal",
+  "<img src=\"/images/Data-entry.JPG\" alt=\"Hours Input Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("👥 Employee Configs", [
+  "Each person has their own config file.",
+  "You can set shifts, holidays, and entitlements per person.",
+  "Winter periods are defined by start and end dates in the config.",
+  "<img src=\"/images/SeasonData.JPG\" alt=\"Employee Configs Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("🎯 Entitlements", [
+  "<code>Off code:</code> Time off work (missing in action).",
+  "<code>Working code:</code> Time at work.",
+  "<code>Min blind code:</code> At work but doing something else (Training, Meeting, etc.).",
+  "<img src=\"/images/configEntitlements.JPG\" alt=\"Entitlements Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("📝 Leave Aware", [
+  "View and request leave — see what’s taken, pending, and upcoming.",
+  "<img src=\"/images/leaverequest.JPG\" alt=\"Leave Request\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("👀 Who’s On/Off", [
+  "Tracks who’s on shift and who’s off.",
+  "Suggests the best person to cover leave or sick calls.",
+  "<img src=\"/images/suggested.JPG\" alt=\"Suggested Cover\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("📞 Someone Called In", [
+  "The system knows who should be ON or OFF.",
+  "If someone calls in sick, it highlights who’s missing.",
+  "<img src=\"/images/callin.JPG\" alt=\"Phone-In Alert\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("🧭 Cover Dashboard", [
+  "See who’s doing what — at a glance.",
+  "Highlights missing staff and suggests covers.",
+  "<img src=\"/images/CoverDash.JPG\" alt=\"Cover Dashboard Overview\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">",
+  "Shows who’s covering for whom, with clear status labels.",
+  "<img src=\"/images/Covered.JPG\" alt=\"Cover Assignment View\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">",
+  "Once approved, rosters update automatically with notes for clarity."
+]),
+
+("🎉 Holiday Handling", [
+  "NZ holidays are pulled for the current and next year.",
+  "Subdivision example: <code>holidays.country_holidays('NZ', years=[2025, 2026], subdiv='Taranaki')</code>",
+  "<img src=\"/images/Holidays.JPG\" alt=\"Holiday Handling Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("📲 QR Codes: Add Shifts to Google Calendar", [
+  "Easily generate QR codes that add shift reminders directly to your Google Calendar.",
+  "Just scan the code with your phone — it’ll create a calendar event with the correct time and details.",
+  "<img src=\"/images/QRcode.JPG\" alt=\"QR Code Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">",
+  "To keep things tidy, I’ve created a separate Google Calendar called '<b>Extra Shifts</b>'.",
+  "When you scan a QR code, the shift gets added there — so your main calendar stays clean and uncluttered.",
+  "You can toggle that calendar on or off whenever you want to check your upcoming shifts.",
+  "Want to set up your own? Just create a new Google Calendar and add repeating events that match your shift pattern.",
+  "For example: start with Day 1 of your pattern and create a repeating event every 8 days for day shifts. Then do the same for night shifts, starting on Day 2.",
+  "Repeat this for each unique shift in your pattern. It takes a few minutes to set up, but once done, you can scan QR codes anytime to keep your calendar in sync — no manual entry needed."
+]),
+
+
+("📣 Report To (" ~ (reporting_managers | join(', ')) ~ ")", [
+  "These are the reporting managers identified by job title.",
+  "Access rules determine who can view and interact with each section.",
+  "Logic ensures managers see their department’s data, while others see only their own.",
+  '<a href="/shifts" class="text-blue-600 hover:underline ' ~ (ok[2] | default('')) ~ '">📋 Roster Settings</a>',
+  '<a href="/jobtitles" class="text-blue-600 hover:underline ' ~ (ok[2] | default('')) ~ '">🏢 Job Titles & Departments</a>',
+  "<img src=\"/images/jobtitles.JPG\" alt=\"Report To Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+
+("🗒️ Notes", [
+  "Add custom notes that appear as tooltips.",
+  "Example: select <code>TRE</code> and write <em>First Aid Course</em> in notes.",
+  "If you go home sick, add an extra entry (e.g., <code>PNW 4.0</code>) alongside your normal shift."
+]),
+
+("💊 PSL", [
+  "PSL (Paid Sick Leave) lets employees take time off when unwell without losing pay.",
+  "It’s tracked separately to ensure accurate accounting of entitlements and usage.",
+  "PSL is taken at 8 hrs/day but logged as 12 hrs — add 4 hrs PNW to balance the drawdown.",
+  "Have put some maths logic in as everything is in mins",
+  "<CODE>  'Maths': {<BR>
+    'PSL': 'PSL=480 PNW=240',<BR>
+    'BVT': 'BVT=480 PNW=240',<BR>
+    'PPL': 'PPL=480 PNW=240'<BR>
+  }</CODE>",
+  "This means when you take 480 mins of PSL it will auto add 240 mins of PNW to keep your hours correct.",
+  "all mins are converted to mins for the calculations so 480 mins of PSL is 8 hrs and 240 mins of PNW is 4 hrs making a total of 12 hrs deducted from your balance.",
+  "and does addjust for winter hours as well."
+]),
+("💵 CASH", [
+  "CASHing out hours you can now do this by selecting CASH as your type in the edit hours modal.",
+  "when you select CASH it will auto set the hours to 0 as you are not working any hours for CASH entries.",
+  "this will then deduct the hours from your balance as normal but will not add any hours to your total worked hours for the season.",
+  "remember this can only be done if your employer allows it and you have enough hours to cash out."
+]), 
+("📈 Pacing", [
+  "Tracks your leave usage against entitlements in real time.",
+  "Helps you stay on track to use your leave by season’s end.",
+  "Updates automatically as shifts and leave are entered.",
+  "Shows detailed breakdowns of used, entitled, and remaining leave.",
+  "<img src=\"/images/Whereyouare.JPG\" alt=\"Pacing Image\" class=\"mt-4 rounded-lg shadow-lg mx-auto w-[75%]\">"
+]),
+("📈 Roll over next Season", [
+  "At season end there a /switch that can be add the the shortcut which will roll over all emp in the system",
+  "You must update the basic config file first with next seasons start end dates and winter hours start end dates.",
+]),
+("📈 Can run it at home", [
+  "YES you can run this program at home on your own pc",
+  "you just need to copy the config folder and the EXE ",
+  "inside the config folder you need config.json , leave.json ,Sick.json and your employee files and roster file ",
+  " Structure is like this :",
+  "------------",
+  "<pre>",
+  "TimeDeck.exe",  
+  " Config",
+  "  &nbsp;&nbsp;| -config.json",
+  "  &nbsp;&nbsp;| -leave.json",
+  "  &nbsp;&nbsp;| -sick.json",
+  "  &nbsp;&nbsp;| -emp_"~me.id~".json",
+  "  &nbsp;&nbsp;| -roster_"~me.id~".json",
+  "</pre>",
+]),
+
+("🛡️ Backups", [
+  "Backups are created every time the program is closed.",
+  "Stored in a backup folder inside the config directory.",
+  "Only the last 7 backups are kept"])
+]
+  %}
+<!--
+<div id="sidebar-tracker" class="fixed top-20 right-6 w-64 bg-white border border-blue-300 rounded-lg shadow-lg p-4">
+  <h3 class="text-lg font-bold mb-2 text-blue-700">📘 Help Progress</h3>
+  <ul id="tracker-list" class="space-y-1 text-sm text-gray-800"></ul>
+</div>
+-->
+<p class="text-md mt-4 mb-6 no-print">
+  Welcome to the TimeDeck™ Help Guide. Each section below explains a key part of the system. 
+  Just click a heading to expand it — the system will gently close the previous one so you can focus.
+</p>
+
+<div class="toc print-only">
+  <h2>📚 Table of Contents</h2>
+  <ol>
+    {% for section in sections %}
+      <li>{{ loop.index }}. {{ section[0] }}</li>
+    {% endfor %}
+  </ol>
+</div>
+
+
+<div id="help-sections">
+
+{% for section in sections %}
+<div class="page-break">
+  <h2 onclick="toggleSection('section{{ loop.index0 }}')" 
+      class="flex justify-between items-center bg-gradient-to-r from-blue-700 to-blue-500 text-white px-6 py-3 rounded-xl shadow-lg cursor-pointer transition-all duration-300 hover:from-blue-600 hover:to-blue-400">
+    <span>{{ loop.index }}. {{ section[0] }}</span>
+    <span class="icon">▶</span>
+  </h2>
+  <div id="section{{ loop.index0 }}" class="section overflow-hidden max-h-0 transition-all duration-500 ease-in-out bg-white border-l-4 border-blue-500 rounded-b-xl px-6 py-0">
+    <ul class="py-2">
+      {% for item in section[1] %}
+        {% if "Roster Settings" in item or "Job Titles" in item %}
+          {% if me %}
+            <li class="mb-1">{{ item | safe }}</li>
+          {% endif %}
+        {% else %}
+          <li class="mb-1">{{ item | safe }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+  </div>
+{% endfor %}
+</div>
+
+
+
+<script>
+function printAllSections() {
+  document.querySelectorAll('.section').forEach(section => {
+    section.style.maxHeight = section.scrollHeight + 'px';
+    section.classList.add('open');
+    const header = section.previousElementSibling;
+    header.classList.add('active');
+    header.querySelector('.icon').textContent = '▼';
+    updateTracker(header);
+
+  });
+  setTimeout(() => window.print(), 500);
+}
+
+</script>
+
+
+
+<script>
+function toggleSection(id) {
+  const section = document.getElementById(id);
+  const header = section.previousElementSibling;
+  const icon = header.querySelector('.icon');
+  const wrapper = header.parentElement;
+  const container = document.getElementById('help-sections');
+
+  const allWrappers = Array.from(container.querySelectorAll('.page-break'));
+  const currentIndex = allWrappers.indexOf(wrapper);
+  const nextWrapper = allWrappers[currentIndex + 1];
+
+  if (section.classList.contains('open')) {
+    // Collapse current section
+    section.style.maxHeight = null;
+    section.classList.remove('open');
+    header.classList.remove('active');
+    icon.textContent = '▶';
+
+    // Move current section to bottom
+    container.appendChild(wrapper);
+
+    // Open the next section (captured before the move)
+    if (nextWrapper) {
+      const nextSection = nextWrapper.querySelector('.section');
+      const nextHeader = nextWrapper.querySelector('h2');
+      const nextIcon = nextHeader.querySelector('.icon');
+
+      nextSection.style.maxHeight = nextSection.scrollHeight + 'px';
+      nextSection.classList.add('open');
+      nextHeader.classList.add('active');
+      nextIcon.textContent = '▼';
+    }
+  } else {
+    // Close all other sections
+    document.querySelectorAll('.section.open').forEach(s => {
+      s.style.maxHeight = null;
+      s.classList.remove('open');
+      const i = s.previousElementSibling.querySelector('.icon');
+      i.textContent = '▶';
+      s.previousElementSibling.classList.remove('active');
+    });
+
+    // Expand selected section
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    section.style.maxHeight = section.scrollHeight + 'px';
+    section.classList.add('open');
+    header.classList.add('active');
+    icon.textContent = '▼';
+  }
+}
+
+function updateTracker(header) {
+  const index = Array.from(document.querySelectorAll('h2')).indexOf(header);
+  const trackerItem = document.querySelector(`#tracker-list li[data-index="${index}"]`);
+  if (trackerItem) {
+    trackerItem.classList.remove('opacity-50');
+    trackerItem.classList.add('text-blue-600', 'font-semibold');
+  }
+}
+
+
+// Auto-open the first section
+document.addEventListener('DOMContentLoaded', () => {
+  const first = document.querySelector('.section');
+  if (first) {
+    first.style.maxHeight = first.scrollHeight + 'px';
+    first.classList.add('open');
+    const header = first.previousElementSibling;
+    header.classList.add('active');
+    header.querySelector('.icon').textContent = '▼';
+  }
+});
+
+function resetOrder() {
+  const container = document.getElementById('help-sections');
+  const headers = Array.from(container.querySelectorAll('h2'));
+  const sections = Array.from(container.querySelectorAll('.section'));
+
+  // Capture original order using data-index
+  const ordered = headers.map((header, i) => ({
+    header,
+    section: sections[i],
+    index: i
+  }));
+
+  // Sort by original index
+  ordered.sort((a, b) => a.index - b.index);
+
+  // Clear container and re-append in original order
+  ordered.forEach(({ header, section }) => {
+    container.appendChild(header);
+    container.appendChild(section);
+
+    // Collapse all
+    section.style.maxHeight = null;
+    section.classList.remove('open');
+    header.classList.remove('active');
+    header.querySelector('.icon').textContent = '▶';
+  });
+
+  // Auto-open the first section again
+  const first = ordered[0];
+  first.section.style.maxHeight = first.section.scrollHeight + 'px';
+  first.section.classList.add('open');
+  first.header.classList.add('active');
+  first.header.querySelector('.icon').textContent = '▼';
+}
+
+
+
+
+</script>
+
+{{ back_button() }}
+
+{% endblock %}

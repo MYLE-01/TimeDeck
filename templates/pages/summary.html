@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+  <div class="bg-white p-6 rounded shadow mt-6">
+    <h2 class="text-lg font-bold mb-4">Shift Coverage for Selected Date</h2>
+
+    <label for="datePicker" class="block mb-2 font-medium">Pick a Date:</label>
+    <input type="date" id="datePicker" name="datePicker" class="border p-2 rounded w-full max-w-sm mb-4" value="{{ today_str }}">
+
+    <div id="summaryContainer" style="position: relative;">
+    <div id="summaryOutput" class="mt-6 text-sm space-y-4 text-gray-800"></div>
+    </div>
+  </div>
+  <script>
+
+    const shiftData = {{ shiftdata | tojson }};
+    const allEmployees = {{ employees | tojson }};
+    const holidayMap = {{ holiday_map | tojson }};
+
+  </script>
+  <script src="/static/scripts/js_maths.js?v={{ now }}"></script>
+  <script src="/static/scripts/edit_hours_utils.js?v={{ now }}"></script>
+  <script src="/static/scripts/edit_hours_modal.js?v={{ now }}"></script>
+  <script src="/static/summary.js?v={{ now }}"></script>
+
+  
+
+{% endblock %}

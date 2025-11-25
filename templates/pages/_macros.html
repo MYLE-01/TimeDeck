@@ -1,0 +1,238 @@
+{% macro manager_OK_leave(me, emp_id, shift, type_shift, cover_by, shift_name, shift_type, date, wants_emp_id , title, letype , backto ) %}
+
+
+{% if me.job_title in ["Manager", "L8"] %}
+
+  <form method="post" action="/request-cover">
+      <input type="hidden" name="source" value="{{ letype }}">
+      <input type="hidden" name="backto" value="{{ backto }}">
+      <input type="hidden" name="cover_by" value="{{ cover_by }}">
+      <input type="hidden" name="emp_id" value="{{ emp_id }}">
+      <input type="hidden" name="shift_name" value = "{{shift_name}}">
+      <input type="hidden" name="type_shift" value = "{{type_shift}}">
+      <input type="hidden" name="shift_type" value = "{{shift_type}}">
+      <input type="hidden" name="shift_cover" value="{{ shift }}">
+      <input type="hidden" name="date" value="{{ date }}">
+      <input type="hidden" name="manager_id" value="{{ me.id }}">
+      <input type="hidden" name="coverage_status" value="approved">
+      <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded text-xs">{{title}}</button>
+  </form>
+
+{% else %}
+  <span class="text-sm italic text-gray-500">(Only Managers can Approved)</span>
+{% endif %} 
+{% endmacro %}
+
+{% macro print_this() %}
+    <button onclick="window.print()" class="no-print  items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition duration-200">
+      <span>🖨️ Print This</span>
+    </button>
+{% endmacro %}
+
+{% macro back_button(label="Back", href=None) %}
+  {% if href %}
+  <br>
+    <a href="{{ href }}"
+      class="no-print inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded shadow w-fit">
+      <span>←</span>
+      <span>{{ label }}</span>
+    </a>
+  {% else %}
+  <br>
+    <button onclick="window.history.back()" class="no-print items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded shadow">
+      <span>←</span>
+      <span>{{ label }}</span>
+    </button>
+  {% endif %}
+{% endmacro %}
+
+
+{% macro format_phone_number(phone_number) %}
+    {%- set cleaned = phone_number|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') -%}
+    {%- if cleaned|length == 10 -%}
+        {%- set formatted = '' + cleaned[:3] + ' ' + cleaned[3:6] + ' ' + cleaned[6:] -%}
+        {{ formatted }}
+    {%- else -%}
+        {{ phone_number }}
+    {%- endif -%}
+{% endmacro %}
+
+{% macro min_to_hrs_label(mins) %}
+  {% set hours = mins // 60 %}
+  {% set minutes = mins % 60 %}
+  {{ hours }}h {{ minutes }}m
+{% endmacro %}
+
+
+{% macro min_to_hrs(minutes) %}
+    {%- set minutes = minutes|int -%}
+    {%- if minutes < 0 -%}
+        {%- set minu = -minutes -%}
+        {%- set my = "-" -%}
+    {%- else -%}
+        {%- set minu = minutes -%}
+        {%- set my = "" -%}
+    {%- endif -%}
+    {%- set hours = (minu // 60) -%}
+    {%- set minu = minu - (hours * 60) -%}
+    {%- set time_str = my ~ "%02d:%02d"|format(hours, minu) -%}
+    {{ "" if time_str == "00:00" else time_str }}
+{% endmacro %}
+
+{% macro input_field(field, label, value, type="text", maxlength=None, options=[], note=None) %}
+  <div class="mb-6">
+    <label for="{{ field }}" class="block text-sm font-medium text-gray-700 mb-1">
+      {{ label }}
+    </label>
+
+    {% if type == "textarea" %}
+      <textarea
+        name="{{ field }}"
+        id="{{ field }}"
+        x-data="{ val: `{{ value }}` }"
+        x-model="val"
+        maxlength="{{ maxlength }}"
+        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 resize-y min-h-[100px]">{{ value }}</textarea>
+
+    {% elif type == "select" %}
+      <select
+        name="{{ field }}"
+        id="{{ field }}"
+        class="w-full border border-gray-300 rounded px-3 py-2 bg-white focus:outline-none focus:border-blue-500">
+        {% if not value %}
+          <option value="" disabled selected>Choose one...</option>
+        {% endif %}
+        {% for option in options %}
+          <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+
+      {% elif type == "multiselect" %}
+        <select
+          name="{{ field }}"
+          id="{{ field }}"
+          class="w-full border border-gray-300 rounded px-3 py-2 bg-white focus:outline-none focus:border-blue-500"
+          multiple>
+          {% for option in options %}
+            <option value="{{ option }}" {% if value and option in value %}selected{% endif %}>{{ option }}</option>
+          {% endfor %}
+        </select>
+
+    {% elif type == "checkbox" %}
+        <div class="flex items-center gap-2 mb-4">
+            <input
+            type="checkbox"
+            name="{{ field }}"
+            id="{{ field }}"
+            value="1"
+            {% if value %} checked {% endif %}
+            class="h-4 w-4 text-blue-700 bg-blue-100 focus:ring-blue-600" />
+            <label for="{{ field }}" class="text-sm font-medium text-gray-700">{{ label }}</label>
+        </div>
+    {% else %}
+        <input
+          type="{{ type }}"
+          name="{{ field }}"
+          id="{{ field }}"
+          value="{{ value }}"
+          x-data="{ val: '{{ value }}' }"
+          x-model="val"
+          maxlength="{{ maxlength }}"
+          {% if type == 'number' %} step="any" {% endif %}
+          class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500" />
+
+
+    {% endif %}
+
+    {% if maxlength and type in ["text", "textarea"] %}
+    <p class="text-xs text-gray-400 mt-1" x-text="`${max - val.length} characters left`"></p>
+    {% endif %}
+
+    {% if note %}
+      <p class="text-xs text-gray-500 mt-1 italic">💡 {{ note }}</p>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% macro input_field_tool(field, label, value, type="text", maxlength=None, options=[], note=None) %}
+  <div class="mb-6 relative">
+    <label for="{{ field }}" class="block text-sm font-medium text-gray-700 mb-1">
+      {{ label }}
+    </label>
+
+    {% set has_hour = 'hour' in label|lower %} <!-- Check if the label contains 'hour' -->
+
+    {% if type == "textarea" %}
+      <textarea
+        name="{{ field }}"
+        id="{{ field }}"
+        x-data="{ val: `{{ value }}` }"
+        x-model="val"
+        maxlength="{{ maxlength }}"
+        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 resize-y min-h-[100px]"></textarea>
+
+    {% elif type == "select" %}
+      <select
+        name="{{ field }}"
+        id="{{ field }}"
+        class="w-full border border-gray-300 rounded px-3 py-2 bg-white focus:outline-none focus:border-blue-500">
+        {% if not value %}
+          <option value="" disabled selected>Choose one...</option>
+        {% endif %}
+        {% for option in options %}
+          <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+
+    {% elif type == "checkbox" %}
+      <div class="flex items-center gap-2 mb-4">
+        <input
+          type="checkbox"
+          name="{{ field }}"
+          id="{{ field }}"
+          value="1"
+          {% if value %} checked {% endif %}
+          class="h-4 w-4 text-blue-700 bg-blue-100 focus:ring-blue-600" />
+        <label for="{{ field }}" class="text-sm font-medium text-gray-700">{{ label }}</label>
+      </div>
+
+    {% else %}
+      <input
+        type="{{ type }}"
+        name="{{ field }}"
+        id="{{ field }}"
+        value="{{ value }}"
+        x-data="{ val: '{{ value }}' }"
+        x-model="val"
+        maxlength="{{ maxlength }}"
+        {% if type == 'number' %} step="any" {% endif %}
+        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500" />
+
+    {% endif %}
+
+    {% if has_hour %}
+      <div id="tooltip-{{ field }}" class="tooltip absolute text-sm bg-gray-700 text-white px-4 py-2 rounded-xl shadow-lg transform opacity-0 pointer-events-none transition-all -translate-y-2 mt-2"></div>
+    {% endif %}
+
+    {% if maxlength and type in ["text", "textarea"] %}
+      <p class="text-xs text-gray-400 mt-1" x-text="`${max - val.length} characters left`"></p>
+    {% endif %}
+
+    {% if note %}
+      <p class="text-xs text-gray-500 mt-1 italic">💡 {{ note }}</p>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+
+{% macro config_entitlements_select(config_entitlements, select_name, selected_value ) %}
+    <select name="{{select_name}}" id="{{select_name}}">
+        {% for key, value in config_entitlements.items() %}
+            {% if key != 'entitlement_unit' and key != 'purpose' and key != 'last_updated' %}
+                <option value="{{ key }}" {% if key == selected_value %}selected{% endif %}>
+                    {{ key }} - {{ value }}
+                </option>
+            {% endif %}
+        {% endfor %}
+    </select>
+{% endmacro %}

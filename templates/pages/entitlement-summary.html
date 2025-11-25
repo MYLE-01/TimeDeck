@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from 'pages/_macros.html' import min_to_hrs , min_to_hrs_label , back_button %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="text-3xl font-bold text-gray-800 mb-6">Entitlement Summary by Department</h1>
+ {{ season_start }} to {{ season_end }}
+ <br> 
+  Total Employees: {{ emp_count }}
+  <br>
+  <br>
+  <div class="space-y-8">
+    {% for department, entitlements in department_summary.items() %}
+      <div class="bg-white shadow-md rounded-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-blue-700">{{ department.upper() }}</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-800">
+            <thead class="bg-gray-50">
+              <tr>
+                <th colspan=2class="px-4 py-2 text-left font-medium">Entitlement</th>
+                <th class="px-4 py-2 text-right font-medium">Count</th>
+                <!--<th class="px-4 py-2 text-right font-medium">Total Minutes</th> -->
+                <th class="px-4 py-2 text-right font-medium">Total Hours</th>
+                <th class="px-4 py-2 text-right font-medium">% of Shift</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              {% for entitlement, data in entitlements.items() %}
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-2 text-center">
+                    <span class="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {{ entitlement }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-2">
+                    {{ data.description }}
+                  </td>
+                  <td class="px-4 py-2 text-right">{{ data.count }}</td>
+                  <!--<td class="px-4 py-2 text-right">{{ data.total_mins }}</td>-->
+                  <td class="px-4 py-2 text-right">{{ min_to_hrs(data.total_mins) }}</td>
+                  <td class="px-4 py-2 text-right">{{ data.percent_of_shift | default(0) }}%</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+
+            <!-- Totals Row -->
+            <tfoot class="bg-gray-100 font-semibold text-gray-700">
+              <tr>
+                <td colspan=2 class="px-4 py-2 text-right">Total</td>
+                <td class="px-4 py-2 text-right">
+                  {{ entitlements.values() | map(attribute='count') | sum }}
+                </td>
+                <!--<td class="px-4 py-2 text-right">
+                  {{ entitlements.values() | map(attribute='total_mins') | sum }}
+                </td> -->
+                <td class="px-4 py-2 text-right">
+                  {{ min_to_hrs_label(entitlements.values() | map(attribute='total_mins') | sum) }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+  <div class="flex justify-center">
+    <button onclick="window.print()" class="no-print items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition duration-200">
+      <span>🖨️ Print This</span>
+    </button>
+  </div>
+ {{ back_button() }} 
+{% endblock %}
