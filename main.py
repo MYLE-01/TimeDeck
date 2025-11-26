@@ -68,11 +68,18 @@ LOG_FILE = os.path.join(BASE_DIR, "TimeDeck.log")
 #logging.warning(f"CONFIGS_DIR folder: {CONFIG_DIRS}")
 backend_used = "Browser fallback"  # or "Edge/Chromium", "WinForms"
 
-logging.warning(f"|-----------------------------|")
-logging.warning(f"|           PLEASE            |")
-logging.warning(f"| DO NOT CLOSE THIS WINDOW !  |")
-logging.warning(f"|                             |")
-logging.warning(f"|-----------------------------|")
+banner_width = 36
+backend_label = f"Backend: {backend_used}"
+# Pad so the line fits exactly inside the borders
+line = f"|   {backend_label:<{banner_width-5}}|"
+
+logging.warning("|" + "-"*(banner_width-2) + "|")
+logging.warning("|             PLEASE               |")
+logging.warning("|   DO NOT CLOSE THIS WINDOW !     |")
+logging.warning(line)
+logging.warning("|" + "-"*(banner_width-2) + "|")
+
+logging.getLogger('pywebview').setLevel(logging.ERROR)
 
 # Mount folders
 if os.path.exists(STATIC_DIR):

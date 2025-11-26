@@ -4,5 +4,21 @@ __pycache__/
 *.pyc
 build/
 dist/
+# Binaries / installers
 *.exe
+*.msi
+*.dll
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE configs
+.vscode/
+.idea/
+
+# emp_123456.json, roster_987654.json, etc.
+configs/emp_[0-9][0-9][0-9][0-9][0-9][0-9].json
+configs/roster_[0-9][0-9][0-9][0-9][0-9][0-9].json
+configs/backup
 

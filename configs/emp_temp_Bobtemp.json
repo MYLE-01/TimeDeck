@@ -1,11 +1,11 @@
 {
-  "emp_id": "541895",
-  "emp_name": "StePhan McKillen",
-  "report_to": "0",
-  "contact_number": "0220233194",
-  "job_title": "L8",
+  "emp_id": "temp_Bobtemp",
+  "emp_name": "bob temp",
+  "report_to": "541896",
+  "contact_number": "",
+  "job_title": "L4",
   "_notes": "Base config for each EMP. Updated annually with rollover leave.",
-  "default_entitlement_mins": 139500,
+  "default_entitlement_mins": 0,
   "public_holidays": "Taranaki",
   "shift_name": "B Shift",
   "reporting_managers": "L7 L8",
@@ -18,10 +18,10 @@
     "allow_self_decline": true
   },
   "season": {
-    "start": "20-07-2025",
-    "ends": "25-07-2026",
+    "start": "01-10-2025",
+    "ends": "31-10-2025",
     "mins": 720,
-    "winter_maths": "on",
+    "winter_maths": "",
     "winter_pattern": "4x3x10",
     "winter_sequence": "DDDD***",
     "winter_mins": 600,
@@ -29,23 +29,7 @@
     "winter_ends": "09-07-2026"
   },
   "annual_entitlements_carryover": {
-    "SHIFT": 0,
-    "CB": 7200,
-    "PNW": 0,
-    "LWP": 0,
-    "PAL": 2191,
-    "ADT": 6688,
-    "LSL": 2880,
-    "PSL": 10588,
-    "USL": 0,
-    "ACC": 0,
-    "BVT": 0,
-    "PPL": 0,
-    "TRE": 480,
-    "CASH": 0,
-    "_notes": "This is our start point rem in MINS but input could be in mins"
-  },
-  "annual_entitlements_used": {
+    "_notes": "This is our start point rem in MINS but input could be in mins",
     "SHIFT": 0,
     "CB": 0,
     "PNW": 0,
@@ -59,8 +43,24 @@
     "BVT": 0,
     "PPL": 0,
     "TRE": 0,
-    "CASH": 0,
-    "_notes": "this is what been used this season"
+    "CASH": 0
+  },
+  "annual_entitlements_used": {
+    "_notes": "this is what been used this season",
+    "SHIFT": 0,
+    "CB": 0,
+    "PNW": 0,
+    "LWP": 0,
+    "PAL": 0,
+    "ADT": 0,
+    "LSL": 0,
+    "PSL": 0,
+    "USL": 0,
+    "ACC": 0,
+    "BVT": 0,
+    "PPL": 0,
+    "TRE": 0,
+    "CASH": 0
   },
   "misc_adjustments": {
     "_notes": "Mite a need some brain here make relay smart",
@@ -81,10 +81,10 @@
     "L4": "Level 4"
   },
   "notes": {
-    "entitlement_unit": "Stored internally as minutes, UI displays as hours. and Its meaning.",
-    "last_updated": "2025-11-24",
+    "last_updated": "2025-11-19",
     "purpose": "Used to power drawdown logic and modal grid.",
-    "SHIFT": "Working Shift",
+    "entitlement_unit": "Stored internally as minutes, UI displays as hours. and Its meaning.",
+    "SHIFT": "Worked the Shift",
     "PNW": "Paid Not Work",
     "CB": "Call Back",
     "LWP": "Leave Without Pay",
@@ -119,19 +119,24 @@
   "min_blind_codes": [
     "TRE"
   ],
-  "last_updated": "2025-11-24T23:57:15.414553",
+  "last_updated": "2025-11-26 17:18",
   "draw_down_codes": [
     "ADT",
     "LSL",
     "PAL"
   ],
-  "your_windows_login": "user",
-  "departments": "DPP2",
+  "Maths": {
+    "PSL": "PSL=480 PNW=240",
+    "BVT": "BVT=480 PNW=240",
+    "PPL": "PPL=480 PNW=240"
+  },
+  "your_windows_login": "",
+  "departments": "Dpp2",
   "working_dept": [],
-  "force_season_roll": false,
-  "updated_by": "User",
   "schedule": {
     "Day": "05:00",
     "Night": "17:00"
-  }
+  },
+  "force_season_roll": false,
+  "updated_by": "User"
 }
