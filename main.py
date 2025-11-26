@@ -66,6 +66,7 @@ LOG_FILE = os.path.join(BASE_DIR, "TimeDeck.log")
 #logging.warning(f"BASE_DIR folder: {BASE_DIR}")
 
 #logging.warning(f"CONFIGS_DIR folder: {CONFIG_DIRS}")
+backend_used = "Browser fallback"  # or "Edge/Chromium", "WinForms"
 
 logging.warning(f"|-----------------------------|")
 logging.warning(f"|           PLEASE            |")
