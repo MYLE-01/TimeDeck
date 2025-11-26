@@ -272,11 +272,23 @@
     "day": "Thursday",
     "holidays": "-",
     "shift_type": "Night",
-    "type_shift": "SHIFT",
+    "type_shift": "PSL",
     "on_shift": true,
-    "mins": 738,
+    "mins": 480,
     "callback_eligible": true,
     "cover_allowed": true,
+    "notes": "phone in sick"
+  },
+  {
+    "ID": "33016fe9-646e-4099-b7ed-32fb6bae28e8",
+    "date": "2025-08-28",
+    "shift": "B Shift",
+    "shift_type": "Night",
+    "type_shift": "PNW",
+    "mins": 240,
+    "callback_eligible": false,
+    "cover_allowed": false,
+    "on_shift": true,
     "notes": ""
   },
   {
@@ -333,10 +345,10 @@
     "mins": 480,
     "callback_eligible": true,
     "cover_allowed": true,
-    "notes": ""
+    "notes": "Phone In sick"
   },
   {
-    "ID": "bafa8b18-f010-4416-aa4a-bb85be1ff113",
+    "ID": "17b11b05-87a9-44f2-a703-13463c710bb8",
     "date": "2025-09-05",
     "shift": "B Shift",
     "shift_type": "Night",
@@ -345,7 +357,7 @@
     "callback_eligible": false,
     "cover_allowed": false,
     "on_shift": true,
-    "notes": ""
+    "notes": "Phone In sick"
   },
   {
     "ID": "00444a33-1243-487e-a900-7d94e8a6e146",
@@ -661,7 +673,7 @@
     "callback_eligible": false,
     "cover_allowed": false,
     "on_shift": true,
-    "notes": ""
+    "notes": "Cover for A Shift"
   },
   {
     "ID": "b82d88f5-7b9a-4d76-bdeb-057f8d5d63e0",
@@ -912,16 +924,18 @@
     "notes": ""
   },
   {
-    "ID": "3a76b9f9-1f6e-48df-bf7d-dcdbe200d3e1",
+    "ID": "24c2e3d2-531c-4655-9ab6-c5821a09d768",
     "date": "2025-11-19",
     "shift": "A Shift",
+    "day": "Wednesday",
+    "holidays": "-",
     "shift_type": "Day",
-    "type_shift": "SHIFT",
-    "mins": 1098,
-    "callback_eligible": false,
-    "cover_allowed": false,
+    "type_shift": "CASH",
     "on_shift": true,
-    "notes": "Cover for A Shift"
+    "mins": 0,
+    "callback_eligible": true,
+    "cover_allowed": true,
+    "notes": "Cover  Michelle"
   },
   {
     "ID": "87f22ed7-9f4b-4356-8312-c47cafa2f85d",
@@ -1036,7 +1050,7 @@
     "notes": ""
   },
   {
-    "ID": "47cddc48-fe92-488d-87e0-d42b595fe07b",
+    "ID": "cae55d70-06ce-4f3a-a83b-614dc8241011",
     "date": "2025-12-06",
     "shift": "A Shift",
     "shift_type": "Day",
@@ -1045,7 +1059,7 @@
     "callback_eligible": false,
     "cover_allowed": false,
     "on_shift": true,
-    "notes": "Cover for A Shift  Kelly"
+    "notes": "cover kellie"
   },
   {
     "ID": "24c96263-81e2-436d-a9eb-052980743aa1",
@@ -1238,7 +1252,7 @@
     "shift_type": "Day",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 1458,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1252,7 +1266,7 @@
     "shift_type": "Night",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1266,7 +1280,7 @@
     "shift_type": "Night",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1280,7 +1294,7 @@
     "shift_type": "Day",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1294,7 +1308,7 @@
     "shift_type": "Day",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1308,7 +1322,7 @@
     "shift_type": "Night",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1322,7 +1336,7 @@
     "shift_type": "Night",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1336,7 +1350,7 @@
     "shift_type": "Day",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1350,7 +1364,7 @@
     "shift_type": "Day",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1364,7 +1378,7 @@
     "shift_type": "Night",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1378,7 +1392,7 @@
     "shift_type": "Night",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1392,7 +1406,7 @@
     "shift_type": "Day",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1406,7 +1420,7 @@
     "shift_type": "Day",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1420,7 +1434,7 @@
     "shift_type": "Night",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
@@ -1434,7 +1448,7 @@
     "shift_type": "Night",
     "type_shift": "SHIFT",
     "on_shift": true,
-    "mins": 720,
+    "mins": 738,
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
