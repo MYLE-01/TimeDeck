@@ -2162,6 +2162,16 @@ async def entitlement_summary(request: Request):
          "now": datetime.now()}
     )
 
+#@app.get("/",response_class=HTMLResponse)
+#async def startup(request:Request):
+#    ok, me = who_is_login()
+#    return templates.TemplateResponse("pages/startup.html", {
+#        "request": request,
+#        "ok": ok,
+#        "me": me,
+#        "now": datetime.now(),
+#        "datetime": datetime
+#    })
 
 #----------------------------
 @app.get("/calendar", response_class=HTMLResponse)
@@ -4736,6 +4746,7 @@ def record_sick_call(date, emp_id, shift_name, shift_type, type_shift, notes="ph
     return sick_entry
 #=====================================================
 import glog
+import glob
 
 def rollover_by_season_change():  # START def
     """
@@ -4799,7 +4810,7 @@ if __name__ == "__main__":
     try:
         logging.info("Attempting to launch TimeDeck™ window...")
         window = webview.create_window("TimeDeck™", "http://127.0.0.1:8000",
-                                       width=750, height=1000)
+                                       width=650, height=1000, resizable=False )
         logging.info("Window creation passed without error.")
         webview.start()
 

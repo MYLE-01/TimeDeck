@@ -1,7 +1,10 @@
 
 
-pyinstaller main.py --onefile --clean --hidden-import pywebview --add-data "images;images"  --add-data "static;static" --add-data "templates;templates" --icon "images/logo.ico" --name TimeDeck
 
+python -m PyInstaller main.py --onefile --clean `
+  --hidden-import pywebview --hidden-import clr_loader --hidden-import clr --hidden-import cffi `
+  --add-data "images;images" --add-data "static;static" --add-data "templates;templates" `
+  --icon "images/logo.ico" --name TimeDeck
 
 
 # Function to summarize entitlements across all employees

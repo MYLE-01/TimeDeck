@@ -354,7 +354,7 @@ function showTimeOffModal(empId, config, dateInput = "", shiftTypeInput = "", ro
           <button class="bg-green-600 text-white px-3 py-2 rounded" id="addpoint3" title="Left-click: +0:18 mins | Shift+Click: +1 hr | Right-click: -0:18 mins"> +- 0:18</button>
           <button class="bg-gray-500 text-white px-3 py-2 rounded" id="cancelTimeOffBtn">Close</button>
         </div>
-        <span id="hoursTotal" class="text-sm text-gray-700">Total: 00:00</span>
+        <span id="hoursTotal" class="border-t border-b border-gray-400 mt-2 pt-1 text-sm text-gray-700">Total: 00:00</span>
       </div>
       <div class="mt-4 flex flex-col items-center">
       <button id="toggleQR" class="px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded hover:bg-blue-200 transition">
@@ -405,10 +405,15 @@ toggleBtn.addEventListener("click", async () => {
     qrFoldout.classList.remove("max-h-screen", "opacity-100");
     qrFoldout.classList.add("max-h-0", "opacity-0");
     toggleBtn.textContent = "📅 Generate Google Calendar QR";
+    removeBtn.style.display = "inline-block";
+
+
   } else {
     qrFoldout.classList.remove("max-h-screen", "opacity-0");
     qrFoldout.classList.add("max-h-screen", "opacity-100");
     toggleBtn.textContent = "📅 Hide Google Calendar QR";
+    removeBtn.style.display = "none";
+
 
     // 🔽 Smooth scroll to QR
     setTimeout(() => {
@@ -826,6 +831,8 @@ toggleBtn.addEventListener("click", async () => {
 //addTimeOffRow(empId, config)
 // Updated addTimeOffRow with "Shift being Covered" moved up (above Type)
 // and Notes header including hint and Autofill button
+let removeBtn; // declare outside
+
 function addTimeOffRow(empId, configOverride, defaultData = {}) {
   const container = document.getElementById("entryContainer");
   if (!container) return null;
@@ -926,8 +933,8 @@ function addTimeOffRow(empId, configOverride, defaultData = {}) {
   // Column 3: Remove button
   const col3 = document.createElement("div");
   col3.className = "flex items-start";
-  const removeBtn = document.createElement("button");
-  removeBtn.textContent = "🗑️❌";
+  removeBtn = document.createElement("button");
+  removeBtn.textContent = "❌";
   removeBtn.title = "Will delete THIS entry";
   removeBtn.className = "text-red-600 hover:text-red-800 ml-2";
   removeBtn.onclick = () => {

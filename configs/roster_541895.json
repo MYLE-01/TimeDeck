@@ -336,7 +336,7 @@
     "notes": ""
   },
   {
-    "ID": "17b11b05-87a9-44f2-a703-13463c710bb8",
+    "ID": "bafa8b18-f010-4416-aa4a-bb85be1ff113",
     "date": "2025-09-05",
     "shift": "B Shift",
     "shift_type": "Night",
@@ -1034,6 +1034,18 @@
     "callback_eligible": true,
     "cover_allowed": true,
     "notes": ""
+  },
+  {
+    "ID": "47cddc48-fe92-488d-87e0-d42b595fe07b",
+    "date": "2025-12-06",
+    "shift": "A Shift",
+    "shift_type": "Day",
+    "type_shift": "SHIFT",
+    "mins": 738,
+    "callback_eligible": false,
+    "cover_allowed": false,
+    "on_shift": true,
+    "notes": "Cover for A Shift  Kelly"
   },
   {
     "ID": "24c96263-81e2-436d-a9eb-052980743aa1",
