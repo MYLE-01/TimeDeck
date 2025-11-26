@@ -30,7 +30,7 @@ from utils.io import load_shifts , load_json, save_roster, save_json, load_roste
 from utils.math import min_to_hrs, convert_this_to_mins, flip_date, convert_expression_to_mins, is_it_pay_day ,get_shift_summary_for_date
 from utils.auth import get_windows_login, who_is_login, can_user_add_employee,find_employee_by_login,load_reporting_managers
 from utils.backup import backup_all_json
-from utils.timeline import Timeline,QR_code_alarm,trace_surplus_window
+from utils.timeline import Timeline,QR_code_alarm
 from utils.paths import BASE_DIR,CONFIG_DIRS , CONFIGS_DIR, CONFIG_DIR, JOB_TITLES_FILE, QR_DIR, TEMPLATES_DIR, STATIC_DIR, IMAGES_DIR
 import shutil
 
@@ -66,20 +66,12 @@ LOG_FILE = os.path.join(BASE_DIR, "TimeDeck.log")
 #logging.warning(f"BASE_DIR folder: {BASE_DIR}")
 
 #logging.warning(f"CONFIGS_DIR folder: {CONFIG_DIRS}")
-backend_used = "Browser fallback"  # or "Edge/Chromium", "WinForms"
 
-banner_width = 36
-backend_label = f"Backend: {backend_used}"
-# Pad so the line fits exactly inside the borders
-line = f"|   {backend_label:<{banner_width-5}}|"
-
-logging.warning("|" + "-"*(banner_width-2) + "|")
-logging.warning("|             PLEASE               |")
-logging.warning("|   DO NOT CLOSE THIS WINDOW !     |")
-logging.warning(line)
-logging.warning("|" + "-"*(banner_width-2) + "|")
-
-logging.getLogger('pywebview').setLevel(logging.ERROR)
+logging.warning(f"|-----------------------------|")
+logging.warning(f"|           PLEASE            |")
+logging.warning(f"| DO NOT CLOSE THIS WINDOW !  |")
+logging.warning(f"|                             |")
+logging.warning(f"|-----------------------------|")
 
 # Mount folders
 if os.path.exists(STATIC_DIR):
@@ -2162,16 +2154,6 @@ async def entitlement_summary(request: Request):
          "now": datetime.now()}
     )
 
-#@app.get("/",response_class=HTMLResponse)
-#async def startup(request:Request):
-#    ok, me = who_is_login()
-#    return templates.TemplateResponse("pages/startup.html", {
-#        "request": request,
-#        "ok": ok,
-#        "me": me,
-#        "now": datetime.now(),
-#        "datetime": datetime
-#    })
 
 #----------------------------
 @app.get("/calendar", response_class=HTMLResponse)
@@ -4746,7 +4728,6 @@ def record_sick_call(date, emp_id, shift_name, shift_type, type_shift, notes="ph
     return sick_entry
 #=====================================================
 import glog
-import glob
 
 def rollover_by_season_change():  # START def
     """
@@ -4810,7 +4791,7 @@ if __name__ == "__main__":
     try:
         logging.info("Attempting to launch TimeDeck™ window...")
         window = webview.create_window("TimeDeck™", "http://127.0.0.1:8000",
-                                       width=650, height=1000, resizable=False )
+                                       width=750, height=1000)
         logging.info("Window creation passed without error.")
         webview.start()
 

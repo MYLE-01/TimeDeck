@@ -4,9 +4,9 @@
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[('C:\\Users\\User\\TimeDeck\\venv\\Lib\\site-packages\\pythonnet\\runtime\\Python.Runtime.dll', '.')],
+    binaries=[],
     datas=[('images', 'images'), ('static', 'static'), ('templates', 'templates')],
-    hiddenimports=['pywebview', 'clr_loader', 'clr', 'cffi'],
+    hiddenimports=['pywebview'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
